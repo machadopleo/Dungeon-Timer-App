@@ -965,6 +965,8 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db   = firebase.firestore();
+  // Persiste escritas localmente — garante que saves não se perdem ao sair da página
+  db.enablePersistence({ synchronizeTabs: false }).catch(() => {});
   let currentUser = null;
 
   // ── Rarities ─────────────────────────────────────────────────
@@ -1995,11 +1997,14 @@
   function scheduleFirestoreSave() {
     if (!currentUser) return;
     clearTimeout(firestoreSaveTimer);
-    firestoreSaveTimer = setTimeout(async () => {
-      try {
-        await db.collection('users').doc(currentUser.uid).set(buildSaveData(), { merge: true });
-      } catch(e) { console.warn('Firestore save failed:', e); }
-    }, 2000);
+    firestoreSaveTimer = setTimeout(flushToFirestore, 600);
+  }
+  function flushToFirestore() {
+    if (!currentUser) return;
+    clearTimeout(firestoreSaveTimer);
+    db.collection('users').doc(currentUser.uid)
+      .set(buildSaveData(), { merge: true })
+      .catch(e => console.warn('Firestore save failed:', e));
   }
 
   function clearAllPlaced() {
@@ -2120,6 +2125,10 @@
     updateAuthUI(user);
     if (user) await loadFromFirestore(user.uid);
   });
+
+  // Força save imediato ao sair da aba ou fechar a página
+  document.addEventListener('visibilitychange', () => { if (document.hidden) flushToFirestore(); });
+  window.addEventListener('pagehide', flushToFirestore);
 
   // ── Catalog ──────────────────────────────────────────────────
   const CAT_TABS = [
