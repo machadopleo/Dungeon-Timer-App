@@ -44,17 +44,32 @@
     .session-type-btn:hover  { background: rgba(120,90,16,0.5); border-color: #C8960E; }
     .session-type-btn:active { transform: scale(0.97); }
 
-    /* ── Session run tab ── */
-    #inv-session-grid { display:flex; flex-wrap:wrap; gap:10px; padding:6px 2px; }
-    .session-item-card {
-      display:flex; flex-direction:column; align-items:center; gap:4px;
-      background:rgba(20,10,2,0.6); border:1px solid #3A2808;
-      border-radius:8px; padding:8px 6px; width:88px;
+    /* ── Session panel (above Modo Foco) ── */
+    #session-panel {
+      display:none; flex-direction:column; gap:0;
+      background:rgba(8,3,0,0.85); border:1px solid #3A2808;
+      border-radius:8px; overflow:hidden;
+      width:100%;
     }
-    .session-item-card img { width:54px; height:54px; object-fit:contain; image-rendering:crisp-edges; }
-    .session-item-card .si-name { color:#DFC880; font-size:0.95rem; text-align:center; line-height:1.2; }
-    .session-item-card .si-new  { color:#80D860; font-size:0.85rem; border:1px solid #4A8A10; border-radius:4px; padding:0 5px; }
-    .session-item-card .si-rep  { color:#5A4020; font-size:0.85rem; border:1px solid #3A2808; border-radius:4px; padding:0 5px; }
+    #session-panel-title {
+      color:#7A5A20; font-size:0.9rem; text-align:center;
+      padding:5px 8px 4px; border-bottom:1px solid #2A1804; flex-shrink:0;
+    }
+    #session-panel-list {
+      display:flex; flex-direction:column; gap:0;
+      max-height:180px; overflow-y:auto;
+      scrollbar-width:thin; scrollbar-color:#3A2808 transparent;
+    }
+    .sp-item {
+      display:flex; align-items:center; gap:7px;
+      padding:5px 8px; border-bottom:1px solid rgba(42,24,4,0.5);
+    }
+    .sp-item:last-child { border-bottom:none; }
+    .sp-item img { width:30px; height:30px; object-fit:contain; image-rendering:crisp-edges; flex-shrink:0; }
+    .sp-item .sp-name  { color:#DFC880; font-size:0.95rem; line-height:1.2; }
+    .sp-item .sp-new   { color:#80D860; font-size:0.8rem; }
+    .sp-item .sp-rep   { color:#4A3818; font-size:0.8rem; }
+    .sp-item .sp-count { color:#C8960E; font-size:1rem; font-weight:bold; flex-shrink:0; }
 
     /* ── Recovery lost items grid ── */
     #recovery-lost-items {
@@ -1127,6 +1142,10 @@
   </div>
 
   <div id="right-controls">
+    <div id="session-panel">
+      <div id="session-panel-title">Itens desta sessao</div>
+      <div id="session-panel-list"></div>
+    </div>
     <div id="focus-mode-wrap">
       <div id="focus-mode-row" onclick="toggleSilentMode()">
         <span id="focus-mode-label">Modo Foco</span>
@@ -1699,6 +1718,48 @@
   // ── Modo silencioso ──────────────────────────────────────────
   let silentMode = false;
 
+  function updateSessionPanel() {
+    const panel = document.getElementById('session-panel');
+    const list  = document.getElementById('session-panel-list');
+    if (!currentSession || !currentSession.itemsEarned.length) {
+      panel.style.display = 'none'; return;
+    }
+    panel.style.display = 'flex';
+    list.innerHTML = '';
+
+    // Agrupa por id, mantém ordem da primeira aparição (mais recente primeiro)
+    const seen = [], counts = {};
+    [...currentSession.itemsEarned].reverse().forEach(it => {
+      counts[it.id] = (counts[it.id] || 0) + 1;
+      if (!seen.find(x => x.id === it.id)) seen.push(it);
+    });
+
+    seen.forEach(it => {
+      const def = ITEMS[it.id] || MOBS[it.id]; if (!def) return;
+      const isNew = !(preSessionItems||[]).includes(it.id) && !(preSessionMobs||[]).includes(it.id);
+      const rar   = RARITIES[def.rarity] || MOB_RARITIES[def.rarity];
+      const count = counts[it.id];
+
+      const row  = document.createElement('div'); row.className = 'sp-item';
+      const img  = document.createElement('img'); img.src = def.file; img.alt = def.name;
+      if (rar) img.style.filter = `drop-shadow(0 0 5px ${rar.glow})`;
+
+      const info = document.createElement('div'); info.style.cssText = 'display:flex;flex-direction:column;flex:1;gap:1px;';
+      const name = document.createElement('span'); name.className = 'sp-name'; name.textContent = def.name;
+      const badge = document.createElement('span'); badge.className = isNew ? 'sp-new' : 'sp-rep';
+      badge.textContent = isNew ? 'Novo' : 'Repetido';
+      info.appendChild(name); info.appendChild(badge);
+
+      row.appendChild(img); row.appendChild(info);
+      if (count > 1) {
+        const cnt = document.createElement('span'); cnt.className = 'sp-count';
+        cnt.textContent = 'x' + count;
+        row.appendChild(cnt);
+      }
+      list.appendChild(row);
+    });
+  }
+
   function toggleSilentMode() {
     silentMode = !silentMode;
     document.getElementById('focus-toggle')?.classList.toggle('active', silentMode);
@@ -1736,7 +1797,7 @@
   function awardMob(id) {
     const isNew = !earnedMobs.includes(id);
     if (isNew) { earnedMobs.push(id); saveMobState(); }
-    if (currentSession) { currentSession.itemsEarned.push({ id, name: MOBS[id].name, rarity: MOBS[id].rarity }); saveSessionRecovery(); }
+    if (currentSession) { currentSession.itemsEarned.push({ id, name: MOBS[id].name, rarity: MOBS[id].rarity }); saveSessionRecovery(); updateSessionPanel(); }
     if (silentMode) { showDropToast(MOBS[id].file, MOBS[id].name, MOBS[id].rarity, isNew); return; }
     pending = id; pendingType = 'mob';
     const rar = MOB_RARITIES[MOBS[id].rarity];
@@ -1757,7 +1818,7 @@
   function awardItem(id) {
     const isNew = !earnedItems.includes(id);
     if (isNew) { earnedItems.push(id); saveState(); }
-    if (currentSession) { currentSession.itemsEarned.push({ id, name: ITEMS[id].name, rarity: ITEMS[id].rarity }); saveSessionRecovery(); }
+    if (currentSession) { currentSession.itemsEarned.push({ id, name: ITEMS[id].name, rarity: ITEMS[id].rarity }); saveSessionRecovery(); updateSessionPanel(); }
     if (silentMode) { showDropToast(ITEMS[id].file, ITEMS[id].name, ITEMS[id].rarity, isNew); return; }
     pending=id; pendingType='item';
     const rar = RARITIES[ITEMS[id].rarity];
@@ -1895,15 +1956,6 @@
   function openInventory() { buildTabs(); buildInventory(); show('inv-modal'); show('overlay'); }
   function buildTabs() {
     const c=document.getElementById('inv-tabs'); c.innerHTML='';
-    if (currentSession) {
-      const btn=document.createElement('button');
-      btn.className='inv-tab'+(activeCategory==='session'?' active':'');
-      btn.textContent='Sessao';
-      btn.onclick=()=>{ activeCategory='session'; buildTabs(); buildInventory(); };
-      c.appendChild(btn);
-    } else if (activeCategory==='session') {
-      activeCategory='hats';
-    }
     CATEGORIES.forEach(cat=>{
       const btn=document.createElement('button');
       btn.className='inv-tab'+(cat.id===activeCategory?' active':'');
@@ -1922,34 +1974,6 @@
       banner.onmouseenter = () => banner.style.borderColor = '#C8960E';
       banner.onmouseleave = () => banner.style.borderColor = '#5A4010';
       scroll.appendChild(banner);
-    }
-    // ── Aba Sessão ──────────────────────────────────────────────
-    if (activeCategory === 'session') {
-      const items = currentSession ? [...currentSession.itemsEarned].reverse() : [];
-      if (!items.length) {
-        const msg=document.createElement('div'); msg.className='inv-empty';
-        msg.textContent='Nenhum item conquistado ainda nesta sessao.';
-        scroll.appendChild(msg);
-      } else {
-        const grid=document.createElement('div'); grid.id='inv-session-grid';
-        items.forEach(it => {
-          const def = ITEMS[it.id] || MOBS[it.id]; if (!def) return;
-          const isNew = !(preSessionItems||[]).includes(it.id) && !(preSessionMobs||[]).includes(it.id);
-          const rar   = RARITIES[def.rarity] || MOB_RARITIES[def.rarity];
-          const card  = document.createElement('div'); card.className='session-item-card';
-          const img   = document.createElement('img'); img.src=def.file; img.alt=def.name;
-          img.style.filter = rar ? `drop-shadow(0 0 6px ${rar.glow})` : '';
-          const name  = document.createElement('div'); name.className='si-name'; name.textContent=def.name;
-          const badge = document.createElement('div'); badge.className=isNew?'si-new':'si-rep';
-          badge.textContent = isNew ? 'Novo!' : 'Repetido';
-          card.appendChild(img); card.appendChild(name); card.appendChild(badge);
-          grid.appendChild(card);
-        });
-        scroll.appendChild(grid);
-      }
-      const invBtn = document.getElementById('inv-collect-btn');
-      if (invBtn) invBtn.style.display = placedHats.length > 0 ? '' : 'none';
-      return;
     }
     const RARITY_ORDER = { common:0, uncommon:1, rare:2, legendary:3 };
     const catItems=earnedItems.map(id=>ITEMS[id]).filter(it=>it&&it.cat===activeCategory)
@@ -2095,6 +2119,7 @@
       itemsEarned: s.itemsEarned || [], completed: false,
     };
     updateDisplay(); updateProgressBar(); updateLifeBar();
+    updateSessionPanel();
     const btn = document.getElementById('start-btn');
     btn.textContent = '▶ Continuar'; btn.classList.remove('pausing');
     document.getElementById('recovery-modal').classList.add('hidden');
@@ -2162,6 +2187,7 @@
   function endSession(completed) {
     if (!currentSession) return;
     clearSessionRecovery();
+    updateSessionPanel();
     const now = new Date();
     currentSession.endTime   = now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
     currentSession.completed = completed;
