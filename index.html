@@ -43,16 +43,21 @@
     .session-type-btn:hover  { background: rgba(120,90,16,0.5); border-color: #C8960E; }
     .session-type-btn:active { transform: scale(0.97); }
 
-    /* ── Reports ── */
-    #reports-btn {
-      position: fixed; bottom: calc(14vh + 100px); left: 16px; z-index: 20;
-      background: none; border: none;
-      color: #DFC880; font-family: inherit; font-size: 1.6rem;
-      padding: 4px 0; cursor: pointer;
-      text-shadow: 0 2px 8px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.9);
-      transition: color 0.15s;
+    /* ── Login tooltip ── */
+    #auth-login-wrap { position: relative; }
+    #auth-login-tooltip {
+      display: none; position: absolute; top: calc(100% + 10px); right: 0;
+      background: rgba(10,5,2,0.97); border: 1px solid #C8960E;
+      border-radius: 8px; padding: 14px 18px;
+      width: 230px; color: #DFC880; font-size: 1.1rem; line-height: 1.9;
+      text-align: left; z-index: 40; pointer-events: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.9);
     }
-    #reports-btn:hover { color: #FFF5CC; }
+    #auth-login-wrap:hover #auth-login-tooltip { display: block; }
+    #auth-login-tooltip strong { color: #C8960E; display: block; margin-bottom: 4px; font-size: 1.0rem; }
+
+    /* ── Dropdown separator ── */
+    .auth-sep { height: 1px; background: #2A1804; margin: 4px 8px; }
 
     #reports-modal {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
@@ -184,15 +189,6 @@
     #rep-sessoes { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 
     /* ── Catalog ── */
-    #catalog-btn {
-      position: fixed; bottom: calc(14vh + 52px); left: 16px; z-index: 20;
-      background: none; border: none;
-      color: #DFC880; font-family: inherit; font-size: 1.6rem;
-      padding: 4px 0; cursor: pointer;
-      text-shadow: 0 2px 8px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.9);
-      transition: color 0.15s;
-    }
-    #catalog-btn:hover { color: #FFF5CC; }
 
     #catalog-modal {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
@@ -263,7 +259,6 @@
 
     /* ── Modo Foco (toggle iOS-style) ── */
     #focus-mode-wrap {
-      position: fixed; bottom: calc(14vh + 124px); right: 16px; z-index: 20;
       display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
     }
     #focus-mode-row {
@@ -274,11 +269,17 @@
       text-shadow: 0 2px 8px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.9);
       user-select: none;
     }
+    #focus-mode-row { position: relative; }
     #focus-mode-desc {
-      color: #7A6030; font-family: inherit; font-size: 0.9rem;
-      text-align: right; text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+      display: none; position: absolute; right: 0; top: calc(100% + 6px);
+      background: rgba(8,4,1,0.97); border: 1px solid #5A4010;
+      border-radius: 6px; padding: 5px 10px; white-space: nowrap;
+      color: #907838; font-family: inherit; font-size: 0.9rem;
+      text-shadow: none; box-shadow: 0 4px 14px rgba(0,0,0,0.8);
+      pointer-events: none; z-index: 30;
       user-select: none;
     }
+    #focus-mode-row:hover #focus-mode-desc { display: block; }
     #focus-toggle {
       width: 44px; height: 26px; border-radius: 13px;
       background: #2A1804; border: 1px solid #5A4010;
@@ -330,26 +331,27 @@
     .drop-toast-rarity { font-size: 0.82rem; }
     #collect-btn:hover { color: #FFF5CC; }
 
-    /* ── Volume control ── */
-    #volume-ctrl {
-      position: fixed; bottom: 14vh; right: 16px;
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-      z-index: 20;
+    /* ── Controles laterais direitos ── */
+    #right-controls {
+      position: fixed; bottom: 7vh; right: 16px; z-index: 20;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 14px;
     }
-    .vol-btn {
-      background: none; border: none;
-      color: #DFC880; font-size: 2.2rem;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-family: inherit; user-select: none;
-      text-shadow: 0 2px 8px rgba(0,0,0,1), 0 0 16px rgba(0,0,0,0.9);
-      transition: color 0.15s; padding: 0 6px;
+
+    /* ── Volume slider triangular ── */
+    #vol-wrap { display: flex; flex-direction: column; gap: 4px; align-self: stretch; }
+    #vol-label-row {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%;
     }
-    .vol-btn:hover { color: #FFF5CC; }
-    #vol-display {
-      color: #C8960E; font-size: 1.3rem;
-      text-shadow: 0 2px 8px rgba(0,0,0,1);
-      text-align: center; line-height: 1;
+    .vol-label {
+      color: #7A6030; font-family: inherit; font-size: 0.9rem;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9); user-select: none;
     }
+    #vol-pct {
+      color: #C8960E; font-family: inherit; font-size: 0.9rem;
+      text-shadow: 0 2px 8px rgba(0,0,0,1); user-select: none;
+    }
+    #vol-canvas { cursor: pointer; display: block; width: 100%; }
 
     /* ── Logo ── */
     #logo {
@@ -776,27 +778,27 @@
   <audio id="bg-music" src="Musica/Musica.mp3" loop></audio>
 
   <div id="auth-wrap">
-    <button id="auth-login-btn" onclick="signInWithGoogle()">Entrar</button>
+    <div id="auth-login-wrap">
+      <button id="auth-login-btn" onclick="signInWithGoogle()">Entrar</button>
+      <div id="auth-login-tooltip">
+        <strong>Faca login para desbloquear:</strong>
+        · Relatorio de foco<br>
+        · Catalogo de drops
+      </div>
+    </div>
     <button id="auth-user-btn" onclick="toggleAuthDropdown()">
       <img id="auth-avatar" src="" alt="">
       <span id="auth-name"></span>
       <span style="color:#7A5A10;font-size:0.85em">▾</span>
     </button>
     <div id="auth-dropdown">
+      <button onclick="openReports(); toggleAuthDropdown()">Relatorios de Foco</button>
+      <button onclick="openCatalog(); toggleAuthDropdown()">Catalogo de Drops</button>
+      <div class="auth-sep"></div>
       <button onclick="doSignOut()">Sair da conta</button>
     </div>
   </div>
 
-  <button id="reports-btn" onclick="openReports()">Relatorios</button>
-  <button id="catalog-btn" onclick="openCatalog()">Catalogo</button>
-
-  <div id="focus-mode-wrap">
-    <div id="focus-mode-row" onclick="toggleSilentMode()">
-      <span id="focus-mode-label">Modo Foco</span>
-      <div id="focus-toggle"></div>
-    </div>
-    <div id="focus-mode-desc">Drops aparecem discretamente</div>
-  </div>
   <div id="drop-log"></div>
 
   <!-- Session type modal -->
@@ -860,10 +862,21 @@
     </div>
   </div>
 
-  <div id="volume-ctrl">
-    <button class="vol-btn" onclick="changeVolume(0.1)" title="Aumentar volume">+</button>
-    <div id="vol-display">50%</div>
-    <button class="vol-btn" onclick="changeVolume(-0.1)" title="Diminuir volume">−</button>
+  <div id="right-controls">
+    <div id="focus-mode-wrap">
+      <div id="focus-mode-row" onclick="toggleSilentMode()">
+        <span id="focus-mode-label">Modo Foco</span>
+        <div id="focus-toggle"></div>
+        <div id="focus-mode-desc">Drops aparecem discretamente</div>
+      </div>
+    </div>
+    <div id="vol-wrap">
+      <div id="vol-label-row">
+        <span class="vol-label">Volume</span>
+        <span id="vol-pct">50%</span>
+      </div>
+      <canvas id="vol-canvas" width="100" height="16"></canvas>
+    </div>
   </div>
 
   <img id="bg"        src="Imagens/Plano de fundo.png" alt="">
@@ -2384,16 +2397,60 @@
   const music = document.getElementById('bg-music');
   let musicVol = 0.5;
   music.volume = musicVol;
-  // Inicia após interação do usuário (política dos navegadores)
   document.addEventListener('click', () => { if (music.paused) music.play(); }, { once: true });
 
-  function changeVolume(delta) {
-    musicVol = Math.min(1, Math.max(0, musicVol + delta));
+  function drawVolSlider() {
+    const canvas = document.getElementById('vol-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const p = musicVol;
+    ctx.clearRect(0, 0, W, H);
+
+    // Background triangle: (0,H) → (W,0) → (W,H)
+    ctx.beginPath(); ctx.moveTo(0,H); ctx.lineTo(W,0); ctx.lineTo(W,H); ctx.closePath();
+    ctx.fillStyle = 'rgba(40,20,5,0.55)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(90,64,14,0.7)'; ctx.lineWidth = 1; ctx.stroke();
+
+    // Filled portion
+    if (p > 0.01) {
+      const fx = p * W, fy = H - p * H;
+      ctx.beginPath(); ctx.moveTo(0,H); ctx.lineTo(fx,fy); ctx.lineTo(fx,H); ctx.closePath();
+      ctx.fillStyle = 'rgba(200,150,14,0.88)'; ctx.fill();
+    }
+
+    // Knob
+    const kx = Math.max(4, p * W);
+    const ky = (H - p * H + H) / 2;
+    ctx.beginPath(); ctx.arc(kx, ky, 4, 0, Math.PI*2);
+    ctx.fillStyle = '#EAD89E'; ctx.fill();
+
+    const el = document.getElementById('vol-pct');
+    if (el) el.textContent = Math.round(p * 100) + '%';
+  }
+
+  function setVol(pct) {
+    musicVol = Math.max(0, Math.min(1, pct));
     music.volume = musicVol;
     if (musicVol === 0) music.pause();
     else if (music.paused) music.play();
-    document.getElementById('vol-display').textContent = Math.round(musicVol * 100) + '%';
+    drawVolSlider();
   }
+
+  (function initVolSlider() {
+    const canvas = document.getElementById('vol-canvas');
+    if (!canvas) return;
+    let dragging = false;
+    const getPct = e => Math.max(0, Math.min(1, (e.clientX - canvas.getBoundingClientRect().left) / canvas.clientWidth));
+    canvas.addEventListener('mousedown',  e => { dragging = true;  setVol(getPct(e)); });
+    window.addEventListener('mousemove',  e => { if (dragging) setVol(getPct(e)); });
+    window.addEventListener('mouseup',    () => { dragging = false; });
+    canvas.addEventListener('touchstart', e => { dragging = true;  setVol(getPct(e.touches[0])); }, {passive:true});
+    window.addEventListener('touchmove',  e => { if (dragging) { e.preventDefault(); setVol(getPct(e.touches[0])); } }, {passive:false});
+    window.addEventListener('touchend',   () => { dragging = false; });
+  })();
+
+  requestAnimationFrame(drawVolSlider);
 
   // ── Mobs ─────────────────────────────────────────────────────
   const MOB_RARITIES = {
