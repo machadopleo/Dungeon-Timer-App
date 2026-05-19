@@ -854,6 +854,74 @@
 .friend-btn.decline { color: #C06040; }
 .friend-btn.decline:hover { border-color: #C06040; background: rgba(200,80,40,0.1); }
 .friends-empty { color: #3A2808; font-size: 1rem; text-align: center; padding: 20px; font-family: inherit; }
+
+/* ── Chat Modal ── */
+#chat-modal {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  z-index: 32; background: rgba(6,2,0,0.97); border-radius: 16px;
+  width: min(98vw, 420px); height: min(85vh, 580px);
+  box-shadow: 0 24px 70px rgba(0,0,0,0.95);
+  display: flex; flex-direction: column;
+}
+#chat-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px 18px 12px; border-bottom: 1px solid #2A1804; flex-shrink: 0;
+}
+#chat-back-btn {
+  background: none; border: none; color: #C8960E; font-family: inherit;
+  font-size: 1.5rem; cursor: pointer; padding: 0 4px 0 0; transition: color 0.15s;
+}
+#chat-back-btn:hover { color: #EAD89E; }
+#chat-friend-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #3A2808; object-fit: cover; }
+#chat-friend-avatar-ph {
+  width: 32px; height: 32px; border-radius: 50%; background: rgba(60,40,8,0.5);
+  border: 1px solid #3A2808; display: flex; align-items: center; justify-content: center;
+  color: #7A6030; font-size: 1.1rem; font-family: inherit; flex-shrink: 0;
+}
+#chat-friend-info { flex: 1; min-width: 0; }
+#chat-friend-name { color: #EAD89E; font-size: 1.15rem; font-family: inherit; display: block; }
+#chat-friend-tag  { color: #5A4020; font-size: 0.85rem; font-family: inherit; }
+#chat-close-btn {
+  background: none; border: none; color: #C8960E; font-size: 1.4rem;
+  cursor: pointer; font-family: inherit; transition: color 0.15s;
+}
+#chat-close-btn:hover { color: #EAD89E; }
+#chat-messages {
+  flex: 1; overflow-y: auto; padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 8px; min-height: 0;
+  scrollbar-width: thin; scrollbar-color: #7A5A10 rgba(255,255,255,0.05);
+}
+#chat-messages::-webkit-scrollbar { width: 6px; }
+#chat-messages::-webkit-scrollbar-thumb { background: #7A5A10; border-radius: 3px; }
+.chat-msg { display: flex; flex-direction: column; max-width: 78%; }
+.chat-msg.mine   { align-self: flex-end;   align-items: flex-end; }
+.chat-msg.theirs { align-self: flex-start; align-items: flex-start; }
+.chat-bubble {
+  padding: 8px 12px; border-radius: 10px;
+  font-family: inherit; font-size: 1.05rem; line-height: 1.45; word-break: break-word;
+}
+.chat-msg.mine   .chat-bubble { background: rgba(120,90,14,0.35); border: 1px solid #5A4010; color: #EAD89E; border-bottom-right-radius: 3px; }
+.chat-msg.theirs .chat-bubble { background: rgba(20,10,2,0.8);    border: 1px solid #2A1804; color: #DFC880; border-bottom-left-radius: 3px; }
+.chat-time { color: #3A2808; font-size: 0.78rem; font-family: inherit; margin-top: 2px; padding: 0 4px; }
+.chat-empty { color: #3A2808; font-size: 1rem; text-align: center; padding: 40px 20px; font-family: inherit; }
+#chat-input-row {
+  display: flex; gap: 8px; padding: 10px 14px 14px;
+  border-top: 1px solid #2A1804; flex-shrink: 0;
+}
+#chat-input {
+  flex: 1; background: rgba(20,10,2,0.7); border: 1px solid #3A2808;
+  border-radius: 8px; color: #DFC880; font-family: inherit; font-size: 1.05rem;
+  padding: 8px 12px; outline: none; transition: border-color 0.15s;
+  resize: none; height: 38px; overflow: hidden;
+}
+#chat-input:focus { border-color: #7A5A10; }
+#chat-input::placeholder { color: #3A2808; }
+#chat-send-btn {
+  background: rgba(80,60,10,0.4); border: 1px solid #7A5A10; border-radius: 8px;
+  color: #DFC880; font-family: inherit; font-size: 1.4rem;
+  padding: 4px 14px; cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+}
+#chat-send-btn:hover { border-color: #C8960E; background: rgba(120,90,14,0.5); }
   </style>
 </head>
 <body>
@@ -965,7 +1033,7 @@
 
   <img id="bg"        src="Imagens/Plano de fundo.png" alt="">
   <img id="logo"      src="Imagens/Logo.png"           alt="Dungeon Timer">
-  <div id="version-tag">v1.0.1</div>
+  <div id="version-tag">v1.1.0</div>
   <div id="char-shadow"      class="ground-shadow"></div>
   <div id="chest-shadow"     class="ground-shadow"></div>
   <div id="mob-chest-shadow" class="ground-shadow"></div>
@@ -1064,6 +1132,24 @@
     </div>
     <div id="friends-msg" style="display:none"></div>
     <div id="friends-scroll"></div>
+  </div>
+
+  <!-- Chat modal -->
+  <div id="chat-modal" class="hidden">
+    <div id="chat-header">
+      <button id="chat-back-btn" onclick="closeChatGoBack()">←</button>
+      <div id="chat-friend-avatar-ph"></div>
+      <div id="chat-friend-info">
+        <span id="chat-friend-name"></span>
+        <span id="chat-friend-tag"></span>
+      </div>
+      <button id="chat-close-btn" onclick="closeAll()">✕</button>
+    </div>
+    <div id="chat-messages"></div>
+    <div id="chat-input-row">
+      <textarea id="chat-input" rows="1" placeholder="Mensagem..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+      <button id="chat-send-btn" onclick="sendChatMessage()">→</button>
+    </div>
   </div>
 
   <!-- Item image tooltip -->
@@ -1731,7 +1817,10 @@
 
   // ── Modals ───────────────────────────────────────────────────
   function show(id) { document.getElementById(id).classList.remove('hidden'); }
-  function closeAll() { ['hat-notif','inv-modal','mob-modal','catalog-modal','reports-modal','friends-modal','overlay'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
+  function closeAll() {
+    ['hat-notif','inv-modal','mob-modal','catalog-modal','reports-modal','friends-modal','chat-modal','overlay'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+    if (chatListener) { chatListener(); chatListener = null; }
+  }
 
   // Fecha só a notificação de item e abre o relatório pendente, se houver
   let pendingReport = false;
@@ -2457,7 +2546,16 @@
     if (f.inFocus)       { cls = 'focus';  label = 'Em foco' + fmtFocusTime(f.focusStartedAt); }
     else if (f.isOnline) { cls = 'online'; label = 'Online'; }
     else                 { cls = 'idle';   label = 'Offline'; }
+    const msgBtn = document.createElement('button');
+    msgBtn.className = 'friend-btn';
+    msgBtn.textContent = '💬';
+    msgBtn.style.cssText = 'font-size:1.2rem;padding:4px 8px;';
+    msgBtn.onclick = () => openChat(f);
+    const actions = document.createElement('div');
+    actions.className = 'friend-actions';
+    actions.appendChild(msgBtn);
     card.innerHTML = `${av}<div class="friend-info"><div class="friend-name">${f.name}</div><div class="friend-tag">#${f.tag}</div><div class="friend-status"><div class="status-dot ${cls}"></div><span class="status-txt ${cls}">${label}</span></div></div>`;
+    card.appendChild(actions);
     return card;
   }
 
@@ -2520,6 +2618,104 @@
     el.style.color = success ? '#6AAA6A' : '#C06040';
     clearTimeout(el._t);
     el._t = setTimeout(() => { el.style.display = 'none'; }, 3500);
+  }
+
+  // ── Chat ─────────────────────────────────────────────────────
+  let activeChatId     = null;
+  let activeChatFriend = null;
+  let chatListener     = null;
+
+  function getChatId(a, b) { return [a, b].sort().join('_'); }
+
+  function openChat(friend) {
+    activeChatFriend = friend;
+    activeChatId = getChatId(currentUser.uid, friend.uid);
+
+    // Header
+    const ph = document.getElementById('chat-friend-avatar-ph');
+    ph.textContent = (friend.name || '?')[0];
+    document.getElementById('chat-friend-name').textContent = friend.name;
+    document.getElementById('chat-friend-tag').textContent  = '#' + friend.tag;
+
+    document.getElementById('friends-modal').classList.add('hidden');
+    show('chat-modal'); show('overlay');
+    loadChatMessages();
+  }
+
+  function closeChatGoBack() {
+    if (chatListener) { chatListener(); chatListener = null; }
+    document.getElementById('chat-modal').classList.add('hidden');
+    openFriends();
+  }
+
+  function loadChatMessages() {
+    if (chatListener) { chatListener(); chatListener = null; }
+    const msgsDiv = document.getElementById('chat-messages');
+    msgsDiv.innerHTML = '';
+
+    chatListener = db.collection('chats').doc(activeChatId)
+      .collection('messages')
+      .orderBy('at', 'asc')
+      .limitToLast(80)
+      .onSnapshot(snap => {
+        renderChatMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      }, e => console.warn('Chat listener error:', e));
+  }
+
+  function renderChatMessages(msgs) {
+    const div = document.getElementById('chat-messages');
+    const atBottom = div.scrollTop + div.clientHeight >= div.scrollHeight - 60;
+    div.innerHTML = '';
+
+    if (!msgs.length) {
+      div.innerHTML = '<div class="chat-empty">Nenhuma mensagem ainda.<br>Diga oi!</div>';
+      return;
+    }
+
+    msgs.forEach(msg => {
+      const isMine = msg.from === currentUser.uid;
+      const wrap = document.createElement('div');
+      wrap.className = 'chat-msg ' + (isMine ? 'mine' : 'theirs');
+
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble';
+      bubble.textContent = msg.text;
+
+      const time = document.createElement('div');
+      time.className = 'chat-time';
+      if (msg.at) {
+        time.textContent = new Date(msg.at.seconds * 1000)
+          .toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      }
+      wrap.appendChild(bubble);
+      wrap.appendChild(time);
+      div.appendChild(wrap);
+    });
+
+    if (atBottom || msgs.length <= 10) div.scrollTop = div.scrollHeight;
+  }
+
+  async function sendChatMessage() {
+    if (!activeChatId || !currentUser) return;
+    const input = document.getElementById('chat-input');
+    const text  = input.value.trim();
+    if (!text) return;
+    input.value = '';
+
+    const chatRef = db.collection('chats').doc(activeChatId);
+    try {
+      await chatRef.set({
+        members: [currentUser.uid, activeChatFriend.uid],
+        lastMessage: text,
+        lastAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+      await chatRef.collection('messages').add({
+        from:     currentUser.uid,
+        fromName: currentUser.displayName || 'Aventureiro',
+        text,
+        at: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    } catch(e) { console.warn('Send failed:', e); }
   }
 
   // ── Catalog ──────────────────────────────────────────────────
