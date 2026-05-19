@@ -3078,13 +3078,43 @@
   document.getElementById('chest-img').addEventListener('load', positionChest);
   document.getElementById('mob-chest-img').addEventListener('load', positionChest);
 
+  let lastVW = window.innerWidth;
+  let lastVH = window.innerHeight;
+  let saveResizeTimer = null;
   let rafResizePending = false;
 
   function applyResizeAdjustment() {
     rafResizePending = false;
+    const newW = window.innerWidth, newH = window.innerHeight;
+    const oldW = lastVW, oldH = lastVH;
+
     positionChest(); layoutLifeBar(); drawGrip();
-    // Posições de itens e mobs são salvas como % do viewport — CSS já mantém
-    // a posição relativa automaticamente. Não é necessário recalcular.
+
+    if (oldW === newW && oldH === newH) return;
+    lastVW = newW; lastVH = newH;
+
+    // Centro vertical do personagem antes (fórmula espelhando o CSS)
+    const oldCharH = Math.min(460, Math.max(240, 0.45 * oldH));
+    const oldCYpct = (0.83 * oldH - oldCharH / 2) / oldH * 100;
+
+    // Centro vertical do personagem depois (lido do DOM)
+    const charEl = document.getElementById('char-img');
+    const nr = charEl.getBoundingClientRect();
+    const newCY = nr.height > 0
+      ? nr.top + nr.height / 2
+      : 0.83 * newH - Math.min(460, Math.max(240, 0.45 * newH)) / 2;
+    const newCYpct = newCY / newH * 100;
+
+    // Delta: quantos pontos percentuais o personagem se moveu verticalmente.
+    // Todos os itens se deslocam o mesmo valor — sem amplificação por distância.
+    // Horizontal não muda: o personagem sempre fica em 50% da largura.
+    const deltaY = newCYpct - oldCYpct;
+
+    placedHats.forEach(h => { h.y += deltaY; applyHatStyle(h); });
+    placedMobs.forEach(m => { m.y += deltaY; applyMobStyle(m); });
+
+    clearTimeout(saveResizeTimer);
+    saveResizeTimer = setTimeout(() => { saveState(); saveMobState(); }, 400);
   }
 
   // Use rAF so the handler runs after the browser has fully applied the new
