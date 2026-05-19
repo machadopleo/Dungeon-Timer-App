@@ -2016,23 +2016,34 @@
   }
 
   function applyUserData(data) {
-    clearAllPlaced();
+    // earnedItems, sessões e configurações → sempre do Firestore (sincronizam entre dispositivos)
     earnedItems    = data.earnedItems    || [];
     earnedMobs     = data.earnedMobs     || [];
     sessionHistory = data.sessionHistory || [];
     if (data.silentMode !== undefined) silentMode = data.silentMode;
     if (data.hatIntervalM) hatIntervalM = data.hatIntervalM;
 
-    for (const ph of (data.placedHats||[])) {
-      if (ITEMS[ph.itemId]) placedHats.push(createPlacedHat(ph.itemId,ph.x,ph.y,ph.size,ph.rotation||0,ph.flipped||false));
+    // Itens na tela → locais ao dispositivo (localStorage já os carregou).
+    // Só restaura do Firestore se não houver nada carregado localmente,
+    // evitando que um save incompleto apague o que estava na tela.
+    const localHasPlaced = placedHats.length > 0 || placedMobs.length > 0;
+    const fsHasPlaced    = (data.placedHats||[]).length > 0 || (data.placedMobs||[]).length > 0;
+
+    if (!localHasPlaced && fsHasPlaced) {
+      // Dispositivo sem estado local — restaura do Firestore (ex: primeiro acesso no browser)
+      for (const ph of (data.placedHats||[])) {
+        if (ITEMS[ph.itemId]) placedHats.push(createPlacedHat(ph.itemId,ph.x,ph.y,ph.size,ph.rotation||0,ph.flipped||false));
+      }
+      for (const pm of (data.placedMobs||[])) {
+        if (MOBS[pm.mobId]) placedMobs.push(createPlacedMob(pm.mobId,pm.x,pm.y,pm.size,pm.rotation||0,pm.flipped||false));
+      }
     }
-    for (const pm of (data.placedMobs||[])) {
-      if (MOBS[pm.mobId]) placedMobs.push(createPlacedMob(pm.mobId,pm.x,pm.y,pm.size,pm.rotation||0,pm.flipped||false));
-    }
+    // Se localStorage já tem itens, mantém o que está na tela sem tocar.
+    // Se ambos estão vazios, nada a fazer.
 
     document.getElementById('focus-toggle')?.classList.toggle('active', silentMode);
 
-    // Update local cache (no Firestore re-save needed)
+    // Atualiza cache local com o estado mesclado
     localStorage.setItem('dt_v7', JSON.stringify({ earnedItems, hatIntervalM, placedHats: placedHats.map(h=>({itemId:h.itemId,x:h.x,y:h.y,size:h.size,rotation:h.rotation||0,flipped:h.flipped||false})) }));
     localStorage.setItem('dt_mobs_v1', JSON.stringify({ earnedMobs, placedMobs: placedMobs.map(m=>({mobId:m.mobId,x:m.x,y:m.y,size:m.size,rotation:m.rotation||0,flipped:m.flipped||false})) }));
     localStorage.setItem('dt_sessions_v1', JSON.stringify(sessionHistory));
