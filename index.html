@@ -2015,6 +2015,7 @@
       sessionHistory,
       hatIntervalM,
       silentMode,
+      musicVol,
     };
   }
 
@@ -2047,6 +2048,7 @@
     sessionHistory = data.sessionHistory || [];
     if (data.silentMode !== undefined) silentMode = data.silentMode;
     if (data.hatIntervalM) hatIntervalM = data.hatIntervalM;
+    if (data.musicVol !== undefined) { musicVol = data.musicVol; music.volume = musicVol; }
 
     // Itens na tela → locais ao dispositivo (localStorage já os carregou).
     // Só restaura do Firestore se não houver nada carregado localmente,
@@ -2395,7 +2397,8 @@
 
   // ── Música de fundo ──────────────────────────────────────────
   const music = document.getElementById('bg-music');
-  let musicVol = 0.5;
+  let musicVol = parseFloat(localStorage.getItem('dt_vol') ?? '0.5');
+  if (isNaN(musicVol)) musicVol = 0.5;
   music.volume = musicVol;
   document.addEventListener('click', () => { if (music.paused) music.play(); }, { once: true });
 
@@ -2434,6 +2437,8 @@
     music.volume = musicVol;
     if (musicVol === 0) music.pause();
     else if (music.paused) music.play();
+    localStorage.setItem('dt_vol', musicVol);
+    scheduleFirestoreSave();
     drawVolSlider();
   }
 
