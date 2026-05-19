@@ -358,6 +358,13 @@
       image-rendering: crisp-edges; z-index: 20;
       filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8));
     }
+    #version-tag {
+      position: fixed; z-index: 20;
+      left: 14px; top: calc(12px + clamp(160px, 22vw, 300px) * 0.28);
+      color: #5A4020; font-family: inherit; font-size: 0.95rem;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+      pointer-events: none; user-select: none;
+    }
 
     /* ── Character ── */
     #char-img {
@@ -561,7 +568,8 @@
     }
     #timer-controls .btn:hover  { background: none; border: none; color: #FFF5CC; }
     #timer-controls .btn:active { transform: scale(0.95); }
-    #timer-controls .btn-start  { background: none; border: none; min-width: auto; }
+    #timer-controls .btn-start  { background: none; border: none; min-width: auto; position: relative; top: -4px; }
+    .timer-add-group { display: flex; gap: 2px; align-items: center; }
 
     input.inp {
       background: rgba(80,60,10,0.2); border: 1px solid #7A5A10; color: #DFC880;
@@ -860,6 +868,7 @@
 
   <img id="bg"        src="Imagens/Plano de fundo.png" alt="">
   <img id="logo"      src="Imagens/Logo.png"           alt="Dungeon Timer">
+  <div id="version-tag">v1.0.1</div>
   <div id="char-shadow"      class="ground-shadow"></div>
   <div id="chest-shadow"     class="ground-shadow"></div>
   <div id="mob-chest-shadow" class="ground-shadow"></div>
@@ -873,8 +882,11 @@
     <div id="timer-ui-clip">
       <img id="timer-ui-bg" src="Imagens/UI Timer.png" alt="">
       <div id="timer-controls">
-        <button class="btn" onclick="addTime(10)">+10</button>
-        <button class="btn" onclick="addTime(30)">+30</button>
+        <div class="timer-add-group">
+          <button class="btn" onclick="addTime(5)">+5</button>
+          <button class="btn" onclick="addTime(10)">+10</button>
+          <button class="btn" onclick="addTime(30)">+30</button>
+        </div>
         <span id="timer-display">00:00</span>
         <button class="btn btn-start" id="start-btn" onclick="toggleTimer()">▶ Iniciar</button>
         <button class="btn" onclick="resetTimer()">⟳</button>
