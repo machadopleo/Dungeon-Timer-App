@@ -1130,7 +1130,7 @@
     </div>
     <div id="inv-scroll"></div>
     <div class="modal-footer">
-      <button class="btn" onclick="collectAll()" style="font-size:1.3rem;padding:8px 24px;">Recolher tudo da tela</button>
+      <button id="inv-collect-btn" class="btn" onclick="collectAllHats()" style="font-size:1.3rem;padding:8px 24px;display:none;">Recolher itens da tela</button>
     </div>
   </div>
 
@@ -1150,7 +1150,7 @@
     </div>
     <div id="mob-scroll"></div>
     <div class="modal-footer" style="padding:10px 6px 0;">
-      <button class="btn" onclick="collectAll()" style="font-size:1.3rem;padding:8px 24px;">Recolher tudo da tela</button>
+      <button id="mob-collect-btn" class="btn" onclick="collectAllMobs()" style="font-size:1.3rem;padding:8px 24px;display:none;">Recolher monstros da tela</button>
     </div>
   </div>
 
@@ -1860,6 +1860,8 @@
       }
       row.appendChild(slotsDiv); scroll.appendChild(row);
     }
+    const invBtn = document.getElementById('inv-collect-btn');
+    if (invBtn) invBtn.style.display = placedHats.length > 0 ? '' : 'none';
   }
 
   // ── Modals ───────────────────────────────────────────────────
@@ -2921,15 +2923,16 @@
     });
   }
 
-  function collectAll() {
+  function collectAllHats() {
     [...placedHats].forEach(h => { h.el.remove(); });
     placedHats = [];
-    saveState();
+    saveState(); drawGrip();
+    if (!document.getElementById('inv-modal').classList.contains('hidden')) buildInventory();
+  }
+  function collectAllMobs() {
     [...placedMobs].forEach(m => { m.el.remove(); if(m.shadowEl) m.shadowEl.remove(); });
     placedMobs = [];
-    saveMobState();
-    drawGrip();
-    if (!document.getElementById('inv-modal').classList.contains('hidden')) buildInventory();
+    saveMobState(); drawGrip();
     if (!document.getElementById('mob-modal').classList.contains('hidden')) buildMobInventory();
   }
 
@@ -3304,6 +3307,8 @@
       slotsDiv.appendChild(slot);
     }
     row.appendChild(slotsDiv); scroll.appendChild(row);
+    const mobBtn = document.getElementById('mob-collect-btn');
+    if (mobBtn) mobBtn.style.display = placedMobs.length > 0 ? '' : 'none';
   }
 
   // Mob chest positioning (mirror of positionChest, left side)
