@@ -2754,6 +2754,10 @@
       .limitToLast(80)
       .onSnapshot(snap => {
         renderChatMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        // Chat está aberto — garante que unreadFor é limpo se o remetente o adicionou
+        db.collection('chats').doc(activeChatId)
+          .update({ unreadFor: firebase.firestore.FieldValue.arrayRemove(currentUser.uid) })
+          .catch(()=>{});
       }, e => console.warn('Chat listener error:', e));
   }
 
