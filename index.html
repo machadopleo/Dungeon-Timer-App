@@ -3078,57 +3078,13 @@
   document.getElementById('chest-img').addEventListener('load', positionChest);
   document.getElementById('mob-chest-img').addEventListener('load', positionChest);
 
-  // Returns char center + height for a given viewport, mirroring CSS:
-  // bottom:17vh; height:clamp(240px,45vh,460px)
-  function charCenterForViewport(w, h) {
-    const charH = Math.min(460, Math.max(240, 0.45 * h));
-    return { cx: w / 2, cy: h * 0.83 - charH / 2, charH };
-  }
-
-  let lastVW = window.innerWidth;
-  let lastVH = window.innerHeight;
-  let saveResizeTimer = null;
   let rafResizePending = false;
 
   function applyResizeAdjustment() {
     rafResizePending = false;
-    const newW = window.innerWidth, newH = window.innerHeight;
-    const oldW = lastVW, oldH = lastVH;
-
     positionChest(); layoutLifeBar(); drawGrip();
-
-    if (oldW === newW && oldH === newH) return;
-    lastVW = newW; lastVH = newH;
-
-    // Old position: computed from CSS formula (DOM already reflects new viewport)
-    const oldCC = charCenterForViewport(oldW, oldH);
-
-    // New position: read from actual rendered element (most accurate)
-    const charEl = document.getElementById('char-img');
-    const nr = charEl.getBoundingClientRect();
-    const newCC = nr.height > 0
-      ? { cx: nr.left + nr.width / 2, cy: nr.top + nr.height / 2, charH: nr.height }
-      : charCenterForViewport(newW, newH);
-
-    // Normalize offsets by char height so items scale proportionally with the character
-    placedHats.forEach(h => {
-      const offX = (h.x * oldW / 100 - oldCC.cx) / oldCC.charH;
-      const offY = (h.y * oldH / 100 - oldCC.cy) / oldCC.charH;
-      h.x = (newCC.cx + offX * newCC.charH) / newW * 100;
-      h.y = (newCC.cy + offY * newCC.charH) / newH * 100;
-      applyHatStyle(h);
-    });
-
-    placedMobs.forEach(m => {
-      const offX = (m.x * oldW / 100 - oldCC.cx) / oldCC.charH;
-      const offY = (m.y * oldH / 100 - oldCC.cy) / oldCC.charH;
-      m.x = (newCC.cx + offX * newCC.charH) / newW * 100;
-      m.y = (newCC.cy + offY * newCC.charH) / newH * 100;
-      applyMobStyle(m);
-    });
-
-    clearTimeout(saveResizeTimer);
-    saveResizeTimer = setTimeout(() => { saveState(); saveMobState(); }, 400);
+    // Posições de itens e mobs são salvas como % do viewport — CSS já mantém
+    // a posição relativa automaticamente. Não é necessário recalcular.
   }
 
   // Use rAF so the handler runs after the browser has fully applied the new
