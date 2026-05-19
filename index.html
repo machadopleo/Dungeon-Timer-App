@@ -838,9 +838,11 @@
 .friend-status { display: flex; align-items: center; gap: 5px; margin-top: 3px; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .status-dot.focus  { background: #6AAA6A; box-shadow: 0 0 6px rgba(100,200,100,0.5); }
+.status-dot.online { background: #C8960E; box-shadow: 0 0 5px rgba(200,150,14,0.4); }
 .status-dot.idle   { background: #3A2808; }
 .status-txt { font-size: 0.85rem; font-family: inherit; }
 .status-txt.focus  { color: #6AAA6A; }
+.status-txt.online { color: #C8960E; }
 .status-txt.idle   { color: #3A3020; }
 .friend-actions { display: flex; gap: 6px; flex-shrink: 0; }
 .friend-btn {
@@ -2222,6 +2224,13 @@
       } catch(e) { console.warn('Tag generation failed:', e); }
     }
 
+    // Mark user as online
+    if (currentUser) {
+      db.collection('users').doc(currentUser.uid)
+        .update({ isOnline: true, displayName: currentUser.displayName||'', photoURL: currentUser.photoURL||'' })
+        .catch(()=>{});
+    }
+
     updateAuthUI(currentUser);
     setupFriendsListeners();
   }
@@ -2299,8 +2308,18 @@
   });
 
   // Força save imediato ao sair da aba ou fechar a página
-  document.addEventListener('visibilitychange', () => { if (document.hidden) flushToFirestore(); });
-  window.addEventListener('pagehide', flushToFirestore);
+  function onPageHide() {
+    flushToFirestore();
+    if (currentUser) {
+      db.collection('users').doc(currentUser.uid)
+        .update({ isOnline: false, inFocus: false }).catch(()=>{});
+    }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) onPageHide();
+    else if (running && currentUser) tick(); // retoma o timer ao voltar
+  });
+  window.addEventListener('pagehide', onPageHide);
 
   // ── Friends System ───────────────────────────────────────────
   let userProfile       = null;
@@ -2374,7 +2393,7 @@
       const unsub = db.collection('users').doc(uid).onSnapshot(snap => {
         if (!snap.exists) return;
         const d = snap.data();
-        const friend = { uid, name: d.displayName||'Aventureiro', tag: d.tag||'????', photoURL: d.photoURL||'', inFocus: d.inFocus||false, focusStartedAt: d.focusStartedAt };
+        const friend = { uid, name: d.displayName||'Aventureiro', tag: d.tag||'????', photoURL: d.photoURL||'', inFocus: d.inFocus||false, isOnline: d.isOnline||false, focusStartedAt: d.focusStartedAt };
         const idx = friendsData.findIndex(f => f.uid === uid);
         if (idx >= 0) friendsData[idx] = friend; else friendsData.push(friend);
         if (!document.getElementById('friends-modal').classList.contains('hidden')) buildFriendsModal();
@@ -2406,7 +2425,7 @@
       e.textContent = 'Nenhum amigo ainda. Adicione pelo #tag!';
       scroll.appendChild(e);
     } else {
-      [...friendsData].sort((a,b) => (b.inFocus?1:0) - (a.inFocus?1:0))
+      [...friendsData].sort((a,b) => (b.inFocus?2:b.isOnline?1:0) - (a.inFocus?2:a.isOnline?1:0))
         .forEach(f => scroll.appendChild(buildFriendCard(f)));
     }
   }
@@ -2420,14 +2439,25 @@
     return card;
   }
 
+  function fmtFocusTime(ts) {
+    if (!ts) return '';
+    const mins = Math.floor((Date.now() / 1000 - ts.seconds) / 60);
+    if (mins < 1)  return ' · agora';
+    if (mins < 60) return ` · ${mins}min`;
+    const h = Math.floor(mins / 60), m = mins % 60;
+    return ` · ${h}h${m > 0 ? m + 'm' : ''}`;
+  }
+
   function buildFriendCard(f) {
     const card = document.createElement('div'); card.className = 'friend-card';
     const av = f.photoURL
       ? `<img class="friend-avatar" src="${f.photoURL}" alt="">`
       : `<div class="friend-avatar-ph">${(f.name||'?')[0]}</div>`;
-    const focusLabel = f.inFocus ? 'Em foco' : 'Offline';
-    const cls = f.inFocus ? 'focus' : 'idle';
-    card.innerHTML = `${av}<div class="friend-info"><div class="friend-name">${f.name}</div><div class="friend-tag">#${f.tag}</div><div class="friend-status"><div class="status-dot ${cls}"></div><span class="status-txt ${cls}">${focusLabel}</span></div></div>`;
+    let cls, label;
+    if (f.inFocus)       { cls = 'focus';  label = 'Em foco' + fmtFocusTime(f.focusStartedAt); }
+    else if (f.isOnline) { cls = 'online'; label = 'Online'; }
+    else                 { cls = 'idle';   label = 'Offline'; }
+    card.innerHTML = `${av}<div class="friend-info"><div class="friend-name">${f.name}</div><div class="friend-tag">#${f.tag}</div><div class="friend-status"><div class="status-dot ${cls}"></div><span class="status-txt ${cls}">${label}</span></div></div>`;
     return card;
   }
 
