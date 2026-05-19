@@ -771,6 +771,87 @@
       transition: background 0.12s;
     }
     #auth-dropdown button:hover { background: rgba(120,90,14,0.3); }
+
+/* ── Friends Modal ── */
+#friends-modal {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  z-index: 30; background: rgba(6,2,0,0.97); border-radius: 16px;
+  padding: 24px 28px; width: min(98vw, 440px); max-height: 80vh;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.95);
+  display: flex; flex-direction: column; gap: 14px;
+}
+#friends-header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+#friends-header h3 { color: #EAD89E; font-size: 2rem; text-shadow: 0 2px 8px rgba(0,0,0,1); }
+#friends-close-btn { background: none; border: none; color: #C8960E; font-size: 1.6rem; cursor: pointer; font-family: inherit; transition: color 0.15s; }
+#friends-close-btn:hover { color: #EAD89E; }
+#my-tag-row {
+  background: rgba(20,10,2,0.7); border: 1px solid #3A2808; border-radius: 8px;
+  padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+#my-tag-label { color: #907838; font-size: 1rem; }
+#my-tag-value { color: #EAD89E; font-size: 1.4rem; font-weight: bold; }
+#copy-tag-btn {
+  background: none; border: 1px solid #3A2808; border-radius: 6px;
+  color: #907838; font-family: inherit; font-size: 0.95rem;
+  padding: 3px 10px; cursor: pointer; transition: all 0.15s;
+}
+#copy-tag-btn:hover { border-color: #C8960E; color: #EAD89E; }
+#add-friend-row { display: flex; gap: 8px; flex-shrink: 0; }
+#add-friend-input {
+  flex: 1; background: rgba(20,10,2,0.7); border: 1px solid #3A2808;
+  border-radius: 8px; color: #DFC880; font-family: inherit; font-size: 1.1rem;
+  padding: 8px 12px; outline: none; transition: border-color 0.15s;
+}
+#add-friend-input:focus { border-color: #7A5A10; }
+#add-friend-input::placeholder { color: #3A2808; }
+#add-friend-btn {
+  background: rgba(80,60,10,0.3); border: 1px solid #7A5A10; border-radius: 8px;
+  color: #DFC880; font-family: inherit; font-size: 1.1rem;
+  padding: 8px 16px; cursor: pointer; white-space: nowrap; transition: all 0.15s;
+}
+#add-friend-btn:hover { border-color: #C8960E; background: rgba(120,90,14,0.4); }
+#friends-msg { font-family: inherit; font-size: 1rem; text-align: center; flex-shrink: 0; padding: 2px 0; }
+#friends-scroll {
+  overflow-y: auto; flex: 1; min-height: 0;
+  scrollbar-width: thin; scrollbar-color: #7A5A10 rgba(255,255,255,0.05);
+}
+#friends-scroll::-webkit-scrollbar { width: 6px; }
+#friends-scroll::-webkit-scrollbar-thumb { background: #7A5A10; border-radius: 3px; }
+.friends-section-title {
+  color: #5A4020; font-family: inherit; font-size: 0.88rem;
+  margin: 10px 0 6px; letter-spacing: 1px; text-transform: uppercase;
+}
+.friend-card {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(20,10,2,0.5); border: 1px solid #2A1804;
+  border-radius: 8px; padding: 10px 12px; margin-bottom: 6px;
+}
+.friend-avatar { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #3A2808; object-fit: cover; flex-shrink: 0; }
+.friend-avatar-ph {
+  width: 36px; height: 36px; border-radius: 50%; background: rgba(60,40,8,0.5);
+  border: 1px solid #3A2808; display: flex; align-items: center; justify-content: center;
+  color: #7A6030; font-size: 1.2rem; flex-shrink: 0; font-family: inherit;
+}
+.friend-info { flex: 1; min-width: 0; }
+.friend-name { color: #DFC880; font-size: 1.05rem; font-family: inherit; }
+.friend-tag  { color: #5A4020; font-size: 0.85rem; font-family: inherit; }
+.friend-status { display: flex; align-items: center; gap: 5px; margin-top: 3px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.focus  { background: #6AAA6A; box-shadow: 0 0 6px rgba(100,200,100,0.5); }
+.status-dot.idle   { background: #3A2808; }
+.status-txt { font-size: 0.85rem; font-family: inherit; }
+.status-txt.focus  { color: #6AAA6A; }
+.status-txt.idle   { color: #3A3020; }
+.friend-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.friend-btn {
+  background: none; border: 1px solid #3A2808; border-radius: 6px;
+  font-family: inherit; font-size: 1.05rem; padding: 4px 12px; cursor: pointer; transition: all 0.15s;
+}
+.friend-btn.accept { color: #6AAA6A; }
+.friend-btn.accept:hover { border-color: #6AAA6A; background: rgba(100,180,100,0.1); }
+.friend-btn.decline { color: #C06040; }
+.friend-btn.decline:hover { border-color: #C06040; background: rgba(200,80,40,0.1); }
+.friends-empty { color: #3A2808; font-size: 1rem; text-align: center; padding: 20px; font-family: inherit; }
   </style>
 </head>
 <body>
@@ -792,6 +873,7 @@
       <span style="color:#7A5A10;font-size:0.85em">▾</span>
     </button>
     <div id="auth-dropdown">
+      <button onclick="openFriends(); toggleAuthDropdown()">Amigos</button>
       <button onclick="openReports(); toggleAuthDropdown()">Relatorios de Foco</button>
       <button onclick="openCatalog(); toggleAuthDropdown()">Catalogo de Drops</button>
       <div class="auth-sep"></div>
@@ -962,6 +1044,24 @@
     <div class="modal-footer" style="padding:10px 6px 0;">
       <button class="btn" onclick="collectAll()" style="font-size:1.3rem;padding:8px 24px;">Recolher tudo da tela</button>
     </div>
+  </div>
+
+  <div id="friends-modal" class="hidden">
+    <div id="friends-header">
+      <h3>Amigos</h3>
+      <button id="friends-close-btn" onclick="closeAll()">✕</button>
+    </div>
+    <div id="my-tag-row">
+      <span id="my-tag-label">Seu tag</span>
+      <span id="my-tag-value">#????</span>
+      <button id="copy-tag-btn" onclick="copyMyTag()">Copiar</button>
+    </div>
+    <div id="add-friend-row">
+      <input id="add-friend-input" type="text" placeholder="#0000" maxlength="5" onkeydown="if(event.key==='Enter')addFriendByTag()">
+      <button id="add-friend-btn" onclick="addFriendByTag()">Adicionar</button>
+    </div>
+    <div id="friends-msg" style="display:none"></div>
+    <div id="friends-scroll"></div>
   </div>
 
   <!-- Item image tooltip -->
@@ -1221,6 +1321,7 @@
       lastAwardEpoch  = tickStart - hatElapsed * 1000;
       btn.textContent = '⏸ Pausar'; btn.classList.add('pausing');
       tickId = setInterval(tick, 300); // shorter interval → snappier on tab refocus
+      if (currentUser) db.collection('users').doc(currentUser.uid).update({ inFocus: true, focusStartedAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
     } else {
       // Sync values before freezing
       const elapsed = Math.floor((Date.now() - tickStart) / 1000);
@@ -1228,6 +1329,7 @@
       hatElapsed = Math.floor((Date.now() - lastAwardEpoch) / 1000);
       btn.textContent = '▶ Continuar'; btn.classList.remove('pausing');
       clearInterval(tickId);
+      if (currentUser) db.collection('users').doc(currentUser.uid).update({ inFocus: false }).catch(()=>{});
     }
   }
   function resetTimer() {
@@ -1238,6 +1340,7 @@
     updateDisplay(); updateProgressBar(); updateLifeBar();
     document.getElementById('start-btn').textContent = '▶ Iniciar';
     document.getElementById('start-btn').classList.remove('pausing');
+    if (currentUser) db.collection('users').doc(currentUser.uid).update({ inFocus: false }).catch(()=>{});
   }
   function tick() {
     const now     = Date.now();
@@ -1626,7 +1729,7 @@
 
   // ── Modals ───────────────────────────────────────────────────
   function show(id) { document.getElementById(id).classList.remove('hidden'); }
-  function closeAll() { ['hat-notif','inv-modal','mob-modal','catalog-modal','reports-modal','overlay'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
+  function closeAll() { ['hat-notif','inv-modal','mob-modal','catalog-modal','reports-modal','friends-modal','overlay'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
 
   // Fecha só a notificação de item e abre o relatório pendente, se houver
   let pendingReport = false;
@@ -2083,14 +2186,27 @@
       const docRef = db.collection('users').doc(uid);
       const snap   = await docRef.get();
       if (snap.exists) {
+        userProfile = snap.data();
         applyUserData(snap.data());
+        if (!userProfile.tag) {
+          const newTag = await generateUniqueTag();
+          await docRef.update({ tag: newTag, displayName: currentUser.displayName||'', photoURL: currentUser.photoURL||'', inFocus: false, friends: [], friendRequests: { sent: [], received: [] } });
+          userProfile.tag = newTag;
+        }
       } else {
-        // First login — migrate local data to Firestore
+        const newTag = await generateUniqueTag();
         const data = buildSaveData();
-        data.isPremium = false;
+        data.isPremium = false; data.tag = newTag;
+        data.displayName = currentUser.displayName || '';
+        data.photoURL = currentUser.photoURL || '';
+        data.inFocus = false; data.friends = [];
         data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
         await docRef.set(data);
+        await db.collection('userTags').doc(newTag).set({ uid });
+        userProfile = data;
       }
+      updateAuthUI(currentUser);
+      setupFriendsListeners();
     } catch(e) { console.warn('Firestore load failed:', e); }
   }
 
@@ -2103,7 +2219,9 @@
       userBtn.style.display   = 'flex';
       document.getElementById('auth-avatar').src = user.photoURL || '';
       document.getElementById('auth-avatar').style.display = user.photoURL ? '' : 'none';
-      document.getElementById('auth-name').textContent = (user.displayName||'Aventureiro').split(' ')[0];
+      const _firstName = (user.displayName||'Aventureiro').split(' ')[0];
+      const _tag = userProfile?.tag ? ' #' + userProfile.tag : '';
+      document.getElementById('auth-name').textContent = _firstName + _tag;
     } else {
       loginBtn.style.display = '';
       userBtn.style.display  = 'none';
@@ -2167,6 +2285,196 @@
   // Força save imediato ao sair da aba ou fechar a página
   document.addEventListener('visibilitychange', () => { if (document.hidden) flushToFirestore(); });
   window.addEventListener('pagehide', flushToFirestore);
+
+  // ── Friends System ───────────────────────────────────────────
+  let userProfile       = null;
+  let friendsData       = []; // [{uid,name,tag,photoURL,inFocus,focusStartedAt}]
+  let pendingRequests   = []; // incoming friend requests
+  let _friendsUnsubs   = []; // onSnapshot unsubscribes for each friend doc
+  let _profileUnsub    = null;
+  let _reqUnsub        = null;
+  let _acceptUnsub     = null;
+
+  async function generateUniqueTag() {
+    for (let i = 0; i < 30; i++) {
+      const tag = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+      const snap = await db.collection('userTags').doc(tag).get();
+      if (!snap.exists) {
+        await db.collection('userTags').doc(tag).set({ uid: currentUser.uid });
+        return tag;
+      }
+    }
+    const fallback = String(Date.now()).slice(-4);
+    await db.collection('userTags').doc(fallback).set({ uid: currentUser.uid });
+    return fallback;
+  }
+
+  function setupFriendsListeners() {
+    if (!currentUser) return;
+    // Own profile listener (friends list updates, tag etc.)
+    if (_profileUnsub) _profileUnsub();
+    _profileUnsub = db.collection('users').doc(currentUser.uid).onSnapshot(snap => {
+      if (!snap.exists) return;
+      userProfile = snap.data();
+      updateAuthUI(currentUser);
+      const friends = userProfile.friends || [];
+      // Rebuild per-friend listeners when friends list changes
+      const current = friendsData.map(f => f.uid);
+      const same = friends.length === current.length && friends.every(u => current.includes(u));
+      if (!same) setupFriendDocListeners(friends);
+      if (!document.getElementById('friends-modal').classList.contains('hidden')) buildFriendsModal();
+    });
+
+    // Incoming pending requests
+    if (_reqUnsub) _reqUnsub();
+    _reqUnsub = db.collection('friendRequests')
+      .where('to', '==', currentUser.uid).where('status', '==', 'pending')
+      .onSnapshot(snap => {
+        pendingRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (!document.getElementById('friends-modal').classList.contains('hidden')) buildFriendsModal();
+      });
+
+    // Accepted requests I sent → add to my friends list
+    if (_acceptUnsub) _acceptUnsub();
+    _acceptUnsub = db.collection('friendRequests')
+      .where('from', '==', currentUser.uid).where('status', '==', 'accepted')
+      .onSnapshot(async snap => {
+        const acceptedUids = snap.docs.map(d => d.data().to);
+        const myFriends = userProfile?.friends || [];
+        const toAdd = acceptedUids.filter(u => !myFriends.includes(u));
+        if (toAdd.length > 0) {
+          await db.collection('users').doc(currentUser.uid).update({
+            friends: firebase.firestore.FieldValue.arrayUnion(...toAdd)
+          }).catch(()=>{});
+        }
+      });
+  }
+
+  function setupFriendDocListeners(friendUids) {
+    _friendsUnsubs.forEach(u => u());
+    _friendsUnsubs = [];
+    friendsData = [];
+    friendUids.forEach(uid => {
+      const unsub = db.collection('users').doc(uid).onSnapshot(snap => {
+        if (!snap.exists) return;
+        const d = snap.data();
+        const friend = { uid, name: d.displayName||'Aventureiro', tag: d.tag||'????', photoURL: d.photoURL||'', inFocus: d.inFocus||false, focusStartedAt: d.focusStartedAt };
+        const idx = friendsData.findIndex(f => f.uid === uid);
+        if (idx >= 0) friendsData[idx] = friend; else friendsData.push(friend);
+        if (!document.getElementById('friends-modal').classList.contains('hidden')) buildFriendsModal();
+      });
+      _friendsUnsubs.push(unsub);
+    });
+  }
+
+  function openFriends() { buildFriendsModal(); show('friends-modal'); show('overlay'); }
+
+  function buildFriendsModal() {
+    document.getElementById('my-tag-value').textContent = '#' + (userProfile?.tag || '????');
+    const scroll = document.getElementById('friends-scroll');
+    scroll.innerHTML = '';
+
+    if (pendingRequests.length > 0) {
+      const t = document.createElement('div'); t.className = 'friends-section-title';
+      t.textContent = 'Solicitacoes (' + pendingRequests.length + ')';
+      scroll.appendChild(t);
+      pendingRequests.forEach(req => scroll.appendChild(buildRequestCard(req)));
+    }
+
+    const t2 = document.createElement('div'); t2.className = 'friends-section-title';
+    t2.textContent = 'Amigos (' + friendsData.length + ')';
+    scroll.appendChild(t2);
+
+    if (friendsData.length === 0) {
+      const e = document.createElement('div'); e.className = 'friends-empty';
+      e.textContent = 'Nenhum amigo ainda. Adicione pelo #tag!';
+      scroll.appendChild(e);
+    } else {
+      [...friendsData].sort((a,b) => (b.inFocus?1:0) - (a.inFocus?1:0))
+        .forEach(f => scroll.appendChild(buildFriendCard(f)));
+    }
+  }
+
+  function buildRequestCard(req) {
+    const card = document.createElement('div'); card.className = 'friend-card';
+    const av = req.fromPhoto
+      ? `<img class="friend-avatar" src="${req.fromPhoto}" alt="">`
+      : `<div class="friend-avatar-ph">${(req.fromName||'?')[0]}</div>`;
+    card.innerHTML = `${av}<div class="friend-info"><div class="friend-name">${req.fromName||'Aventureiro'}</div><div class="friend-tag">#${req.fromTag||'????'}</div></div><div class="friend-actions"><button class="friend-btn accept" onclick="acceptFriendReq('${req.id}','${req.from}')">Aceitar</button><button class="friend-btn decline" onclick="declineFriendReq('${req.id}')">Recusar</button></div>`;
+    return card;
+  }
+
+  function buildFriendCard(f) {
+    const card = document.createElement('div'); card.className = 'friend-card';
+    const av = f.photoURL
+      ? `<img class="friend-avatar" src="${f.photoURL}" alt="">`
+      : `<div class="friend-avatar-ph">${(f.name||'?')[0]}</div>`;
+    const focusLabel = f.inFocus ? 'Em foco' : 'Offline';
+    const cls = f.inFocus ? 'focus' : 'idle';
+    card.innerHTML = `${av}<div class="friend-info"><div class="friend-name">${f.name}</div><div class="friend-tag">#${f.tag}</div><div class="friend-status"><div class="status-dot ${cls}"></div><span class="status-txt ${cls}">${focusLabel}</span></div></div>`;
+    return card;
+  }
+
+  async function addFriendByTag() {
+    if (!currentUser || !userProfile) return;
+    const raw = document.getElementById('add-friend-input').value.trim().replace('#','');
+    const tag = raw.padStart(4, '0');
+    if (!raw || raw.length > 5) { showFriendsMsg('Tag invalido.', false); return; }
+
+    try {
+      const tagSnap = await db.collection('userTags').doc(tag).get();
+      if (!tagSnap.exists) { showFriendsMsg('Nenhum usuario encontrado com #' + tag, false); return; }
+      const targetUid = tagSnap.data().uid;
+      if (targetUid === currentUser.uid) { showFriendsMsg('Voce nao pode adicionar a si mesmo!', false); return; }
+      if ((userProfile.friends||[]).includes(targetUid)) { showFriendsMsg('Voces ja sao amigos.', false); return; }
+
+      const existing = await db.collection('friendRequests')
+        .where('from','==',currentUser.uid).where('to','==',targetUid).where('status','==','pending').get();
+      if (!existing.empty) { showFriendsMsg('Solicitacao ja enviada.', false); return; }
+
+      await db.collection('friendRequests').add({
+        from: currentUser.uid, fromName: currentUser.displayName||'Aventureiro',
+        fromPhoto: currentUser.photoURL||'', fromTag: userProfile.tag||'????',
+        to: targetUid, status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      document.getElementById('add-friend-input').value = '';
+      showFriendsMsg('Solicitacao enviada!', true);
+    } catch(e) { showFriendsMsg('Erro: ' + e.message, false); }
+  }
+
+  async function acceptFriendReq(reqId, fromUid) {
+    try {
+      await db.collection('friendRequests').doc(reqId).update({ status: 'accepted' });
+      await db.collection('users').doc(currentUser.uid).update({
+        friends: firebase.firestore.FieldValue.arrayUnion(fromUid)
+      });
+    } catch(e) { showFriendsMsg('Erro ao aceitar.', false); }
+  }
+
+  async function declineFriendReq(reqId) {
+    try {
+      await db.collection('friendRequests').doc(reqId).update({ status: 'declined' });
+    } catch(e) { showFriendsMsg('Erro ao recusar.', false); }
+  }
+
+  function copyMyTag() {
+    const tag = userProfile?.tag;
+    if (!tag) return;
+    navigator.clipboard.writeText('#' + tag).then(() => {
+      const btn = document.getElementById('copy-tag-btn');
+      btn.textContent = 'Copiado!';
+      setTimeout(() => { btn.textContent = 'Copiar'; }, 1500);
+    }).catch(()=>{});
+  }
+
+  function showFriendsMsg(msg, success) {
+    const el = document.getElementById('friends-msg');
+    el.textContent = msg; el.style.display = 'block';
+    el.style.color = success ? '#6AAA6A' : '#C06040';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = 'none'; }, 3500);
+  }
 
   // ── Catalog ──────────────────────────────────────────────────
   const CAT_TABS = [
