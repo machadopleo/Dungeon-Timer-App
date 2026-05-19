@@ -44,6 +44,37 @@
     .session-type-btn:hover  { background: rgba(120,90,16,0.5); border-color: #C8960E; }
     .session-type-btn:active { transform: scale(0.97); }
 
+    /* ── Recovery modal ── */
+    #recovery-modal {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      z-index: 35; background: rgba(6,2,0,0.98);
+      border: 1px solid #7A5A10; border-radius: 16px; padding: 30px 36px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.97);
+      text-align: center; min-width: 340px; max-width: 480px;
+    }
+    #recovery-modal h3 { color: #EAD89E; font-size: 2rem; margin-bottom: 10px; }
+    #recovery-modal .recovery-info {
+      color: #C8960E; font-size: 1.25rem; margin-bottom: 8px; line-height: 1.6;
+    }
+    #recovery-modal .recovery-warn {
+      color: #7A5A10; font-size: 1rem; margin-bottom: 22px;
+    }
+    #recovery-btns { display: flex; gap: 14px; justify-content: center; }
+    .recovery-btn-yes {
+      background: rgba(60,100,20,0.35); border: 1px solid #4A8A10;
+      color: #A0D860; font-family: inherit; font-size: 1.4rem;
+      padding: 12px 28px; border-radius: 10px; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .recovery-btn-yes:hover { background: rgba(80,140,20,0.5); border-color: #80C830; }
+    .recovery-btn-no {
+      background: rgba(80,20,10,0.35); border: 1px solid #7A3010;
+      color: #C87858; font-family: inherit; font-size: 1.4rem;
+      padding: 12px 28px; border-radius: 10px; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .recovery-btn-no:hover { background: rgba(120,40,20,0.5); border-color: #C06040; }
+
     /* ── Login tooltip ── */
     #auth-login-wrap { position: relative; }
     #auth-login-tooltip {
@@ -994,6 +1025,17 @@
 
   <div id="drop-log"></div>
 
+  <!-- Recovery modal -->
+  <div id="recovery-modal" class="hidden">
+    <h3>⚔ Sessao Interrompida</h3>
+    <div class="recovery-info" id="recovery-info"></div>
+    <div class="recovery-warn" id="recovery-warn"></div>
+    <div id="recovery-btns">
+      <button class="recovery-btn-yes" onclick="recoverSession()">Continuar</button>
+      <button class="recovery-btn-no"  onclick="discardSession()">Descartar</button>
+    </div>
+  </div>
+
   <!-- Session type modal -->
   <div id="session-type-modal" class="hidden">
     <h3>Sessao de Foco</h3>
@@ -1670,7 +1712,7 @@
   function awardMob(id) {
     const isNew = !earnedMobs.includes(id);
     if (isNew) { earnedMobs.push(id); saveMobState(); }
-    if (currentSession) currentSession.itemsEarned.push({ id, name: MOBS[id].name, rarity: MOBS[id].rarity });
+    if (currentSession) { currentSession.itemsEarned.push({ id, name: MOBS[id].name, rarity: MOBS[id].rarity }); saveSessionRecovery(); }
     if (silentMode) { showDropToast(MOBS[id].file, MOBS[id].name, MOBS[id].rarity, isNew); return; }
     pending = id; pendingType = 'mob';
     const rar = MOB_RARITIES[MOBS[id].rarity];
@@ -1691,7 +1733,7 @@
   function awardItem(id) {
     const isNew = !earnedItems.includes(id);
     if (isNew) { earnedItems.push(id); saveState(); }
-    if (currentSession) currentSession.itemsEarned.push({ id, name: ITEMS[id].name, rarity: ITEMS[id].rarity });
+    if (currentSession) { currentSession.itemsEarned.push({ id, name: ITEMS[id].name, rarity: ITEMS[id].rarity }); saveSessionRecovery(); }
     if (silentMode) { showDropToast(ITEMS[id].file, ITEMS[id].name, ITEMS[id].rarity, isNew); return; }
     pending=id; pendingType='item';
     const rar = RARITIES[ITEMS[id].rarity];
@@ -1911,6 +1953,104 @@
   let sessionHistory = [];
   const SESSION_SK = 'dt_sessions_v1';
 
+  // ── Session Recovery ─────────────────────────────────────────
+  const RECOVERY_KEY = 'dt_recovery_v1';
+  let preSessionItems = null;
+  let preSessionMobs  = null;
+  let _pendingRecovery = null;
+
+  function saveSessionRecovery() {
+    if (!currentSession || remaining <= 0) return;
+    localStorage.setItem(RECOVERY_KEY, JSON.stringify({
+      remaining, totalTime, hatElapsed,
+      sessionType:    currentSession.type,
+      sessionId:      currentSession.id,
+      sessionDate:    currentSession.date,
+      sessionStart:   currentSession.startTime,
+      startRemaining: currentSession.startRemaining,
+      itemsEarned:    currentSession.itemsEarned,
+      preSessionItems: preSessionItems || [],
+      preSessionMobs:  preSessionMobs  || [],
+      savedAt: Date.now(),
+    }));
+  }
+
+  function clearSessionRecovery() {
+    localStorage.removeItem(RECOVERY_KEY);
+    preSessionItems = null;
+    preSessionMobs  = null;
+    _pendingRecovery = null;
+  }
+
+  function checkSessionRecovery() {
+    try {
+      const raw = localStorage.getItem(RECOVERY_KEY);
+      if (!raw) return;
+      const state = JSON.parse(raw);
+      if (!state.savedAt || Date.now() - state.savedAt > 86400000) { clearSessionRecovery(); return; }
+      if (!state.remaining || state.remaining <= 0) { clearSessionRecovery(); return; }
+      _pendingRecovery = state;
+      const typeLabel = { leitura:'Leitura', trabalho:'Trabalho', estudos:'Estudos', outros:'Outros' }[state.sessionType] || state.sessionType;
+      const mins = Math.floor(state.remaining / 60), secs = state.remaining % 60;
+      const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+      const itemCount = (state.itemsEarned || []).length;
+      document.getElementById('recovery-info').innerHTML =
+        `Sessao de <strong>${typeLabel}</strong> — <strong>${timeStr}</strong> restantes` +
+        (itemCount > 0 ? `<br>${itemCount} item(s) conquistado(s)` : '');
+      const newCount = (state.itemsEarned || [])
+        .filter(it => !(state.preSessionItems || []).includes(it.id)).length;
+      document.getElementById('recovery-warn').textContent = newCount > 0
+        ? `Descartar apagara ${newCount} item(s) novo(s) desta sessao.`
+        : 'Nenhum item novo sera perdido ao descartar.';
+      document.getElementById('recovery-modal').classList.remove('hidden');
+      document.getElementById('overlay').classList.remove('hidden');
+    } catch(e) { clearSessionRecovery(); }
+  }
+
+  function recoverSession() {
+    if (!_pendingRecovery) return;
+    const s = _pendingRecovery;
+    remaining    = s.remaining;
+    totalTime    = s.totalTime || s.startRemaining || s.remaining;
+    hatElapsed   = 0;
+    lastAwardEpoch = Date.now();
+    preSessionItems = s.preSessionItems || [];
+    preSessionMobs  = s.preSessionMobs  || [];
+    currentSession = {
+      id: s.sessionId, type: s.sessionType,
+      date: s.sessionDate, startTime: s.sessionStart,
+      startRemaining: s.startRemaining || totalTime,
+      itemsEarned: s.itemsEarned || [], completed: false,
+    };
+    updateDisplay(); updateProgressBar(); updateLifeBar();
+    const btn = document.getElementById('start-btn');
+    btn.textContent = '▶ Continuar'; btn.classList.remove('pausing');
+    document.getElementById('recovery-modal').classList.add('hidden');
+    document.getElementById('overlay').classList.add('hidden');
+    _pendingRecovery = null;
+    localStorage.removeItem(RECOVERY_KEY);
+  }
+
+  function discardSession() {
+    if (_pendingRecovery) {
+      const s = _pendingRecovery;
+      // Remove items earned as NEW during the interrupted session
+      const newItems = (s.itemsEarned || []).filter(it => !(s.preSessionItems||[]).includes(it.id)).map(it=>it.id);
+      const newMobs  = (s.itemsEarned || []).filter(it => !(s.preSessionMobs ||[]).includes(it.id)).map(it=>it.id);
+      if (newItems.length || newMobs.length) {
+        earnedItems = earnedItems.filter(id => !newItems.includes(id));
+        earnedMobs  = earnedMobs.filter(id  => !newMobs.includes(id));
+        // Remove placed instances of lost items
+        placedHats = placedHats.filter(h => { if (newItems.includes(h.itemId)) { h.el.remove(); return false; } return true; });
+        placedMobs = placedMobs.filter(m => { if (newMobs.includes(m.mobId)) { m.el.remove(); if(m.shadowEl)m.shadowEl.remove(); return false; } return true; });
+        saveState(); saveMobState();
+      }
+    }
+    clearSessionRecovery();
+    document.getElementById('recovery-modal').classList.add('hidden');
+    document.getElementById('overlay').classList.add('hidden');
+  }
+
   function loadSessions() {
     try { const d=JSON.parse(localStorage.getItem(SESSION_SK)); if(d) sessionHistory=d; } catch(_) {}
   }
@@ -1930,6 +2070,8 @@
   }
 
   function startSession(type) {
+    preSessionItems = [...earnedItems];
+    preSessionMobs  = [...earnedMobs];
     const now = new Date();
     currentSession = {
       id: now.getTime(),
@@ -1947,6 +2089,7 @@
 
   function endSession(completed) {
     if (!currentSession) return;
+    clearSessionRecovery();
     const now = new Date();
     currentSession.endTime   = now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
     currentSession.completed = completed;
@@ -2478,7 +2621,7 @@
   }
 
   function doSignOut() {
-    // Marca offline antes de deslogar
+    clearSessionRecovery();
     if (currentUser) {
       db.collection('users').doc(currentUser.uid)
         .update({ isOnline: false, inFocus: false }).catch(() => {});
@@ -2515,6 +2658,7 @@
 
   // Força save imediato ao sair da aba ou fechar a página
   function onPageHide() {
+    saveSessionRecovery();
     if (currentUser) {
       flushToFirestore();
       db.collection('users').doc(currentUser.uid)
@@ -2528,8 +2672,8 @@
   }
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      // Troca de aba: só salva dados, não marca como offline
       if (currentUser) flushToFirestore();
+      saveSessionRecovery();
     } else {
       // Voltou para a aba: retoma timer e corrige presença (incluindo inFocus)
       if (running) tick();
@@ -3431,7 +3575,7 @@
   updateDisplay();
   loadMobState();
   loadSessions();
-  requestAnimationFrame(()=>{ positionChest(); layoutLifeBar(); positionShadows(); drawGrip(); });
+  requestAnimationFrame(()=>{ positionChest(); layoutLifeBar(); positionShadows(); drawGrip(); checkSessionRecovery(); });
   </script>
 </body>
 </html>
