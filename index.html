@@ -1078,7 +1078,7 @@
 
   <img id="bg"        src="Imagens/Plano de fundo.png" alt="">
   <img id="logo"      src="Imagens/Logo.png"           alt="Dungeon Timer">
-  <div id="version-tag">v1.1.0</div>
+  <div id="version-tag">v1.2.0</div>
   <div id="char-shadow"      class="ground-shadow"></div>
   <div id="chest-shadow"     class="ground-shadow"></div>
   <div id="mob-chest-shadow" class="ground-shadow"></div>
@@ -1823,6 +1823,15 @@
   }
   function buildInventory() {
     const scroll=document.getElementById('inv-scroll'); scroll.innerHTML='';
+    if (!currentUser) {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'display:inline-flex;align-items:center;gap:6px;border:1px solid #5A4010;border-radius:20px;padding:5px 16px;margin-bottom:10px;color:#907838;font-size:1.35rem;cursor:pointer;transition:border-color 0.15s;white-space:nowrap;';
+      banner.innerHTML = 'Faca <strong style="color:#C8960E">login</strong> para salvar seus drops';
+      banner.onclick = () => { closeAll(); signInWithGoogle(); };
+      banner.onmouseenter = () => banner.style.borderColor = '#C8960E';
+      banner.onmouseleave = () => banner.style.borderColor = '#5A4010';
+      scroll.appendChild(banner);
+    }
     const RARITY_ORDER = { common:0, uncommon:1, rare:2 };
     const catItems=earnedItems.map(id=>ITEMS[id]).filter(it=>it&&it.cat===activeCategory)
       .sort((a,b)=>RARITY_ORDER[a.rarity]-RARITY_ORDER[b.rarity]);
@@ -2434,6 +2443,13 @@
   }
 
   function doSignOut() {
+    // Limpa tela e estado antes de deslogar
+    clearAllPlaced();
+    earnedItems = []; earnedMobs = []; sessionHistory = [];
+    localStorage.removeItem('dt_v7');
+    localStorage.removeItem('dt_mobs_v1');
+    localStorage.removeItem('dt_sessions_v1');
+    updateDisplay(); updateLifeBar();
     auth.signOut();
   }
 
@@ -2459,10 +2475,15 @@
 
   // Força save imediato ao sair da aba ou fechar a página
   function onPageHide() {
-    flushToFirestore();
     if (currentUser) {
+      flushToFirestore();
       db.collection('users').doc(currentUser.uid)
         .update({ isOnline: false, inFocus: false }).catch(()=>{});
+    } else {
+      // Sem login: apaga drops ao sair — não persistem entre sessões
+      localStorage.removeItem('dt_v7');
+      localStorage.removeItem('dt_mobs_v1');
+      localStorage.removeItem('dt_sessions_v1');
     }
   }
   document.addEventListener('visibilitychange', () => {
