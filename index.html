@@ -2182,32 +2182,48 @@
   }
 
   async function loadFromFirestore(uid) {
+    const docRef = db.collection('users').doc(uid);
+
+    // 1 — Read user document (force server to bypass stale cache)
+    let snap;
     try {
-      const docRef = db.collection('users').doc(uid);
-      const snap   = await docRef.get();
-      if (snap.exists) {
-        userProfile = snap.data();
-        applyUserData(snap.data());
-        if (!userProfile.tag) {
-          const newTag = await generateUniqueTag();
-          await docRef.update({ tag: newTag, displayName: currentUser.displayName||'', photoURL: currentUser.photoURL||'', inFocus: false, friends: [], friendRequests: { sent: [], received: [] } });
-          userProfile.tag = newTag;
-        }
-      } else {
+      snap = await docRef.get({ source: 'server' });
+    } catch(_) {
+      try { snap = await docRef.get(); } catch(e) { console.warn('Firestore read failed:', e); return; }
+    }
+
+    // 2 — Apply existing data or create document
+    if (snap.exists) {
+      userProfile = snap.data();
+      try { applyUserData(userProfile); } catch(e) { console.warn('applyUserData error:', e); }
+    } else {
+      const initData = Object.assign(buildSaveData(), {
+        isPremium: false, inFocus: false, friends: [],
+        displayName: currentUser.displayName || '',
+        photoURL:    currentUser.photoURL    || '',
+        createdAt:   firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      try { await docRef.set(initData); } catch(e) { console.warn('Firestore set failed:', e); }
+      userProfile = initData;
+    }
+
+    // 3 — Generate tag if missing (runs regardless of whether account is old or new)
+    if (!userProfile.tag) {
+      try {
         const newTag = await generateUniqueTag();
-        const data = buildSaveData();
-        data.isPremium = false; data.tag = newTag;
-        data.displayName = currentUser.displayName || '';
-        data.photoURL = currentUser.photoURL || '';
-        data.inFocus = false; data.friends = [];
-        data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-        await docRef.set(data);
-        await db.collection('userTags').doc(newTag).set({ uid });
-        userProfile = data;
-      }
-      updateAuthUI(currentUser);
-      setupFriendsListeners();
-    } catch(e) { console.warn('Firestore load failed:', e); }
+        await docRef.update({
+          tag: newTag,
+          displayName: currentUser.displayName || '',
+          photoURL:    currentUser.photoURL    || '',
+          inFocus:  false,
+          friends:  userProfile.friends || [],
+        });
+        userProfile = Object.assign({}, userProfile, { tag: newTag });
+      } catch(e) { console.warn('Tag generation failed:', e); }
+    }
+
+    updateAuthUI(currentUser);
+    setupFriendsListeners();
   }
 
   function updateAuthUI(user) {
