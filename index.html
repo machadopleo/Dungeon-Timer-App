@@ -353,13 +353,7 @@
     }
     #vol-canvas { cursor: pointer; display: block; width: 100%; }
 
-    /* ── Logo ── */
-    #logo {
-      position: fixed; top: 12px; left: 14px;
-      width: clamp(160px, 22vw, 300px);
-      image-rendering: crisp-edges; z-index: 20;
-      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8));
-    }
+
     #version-tag {
       position: fixed; z-index: 20;
       left: 14px; top: calc(12px + clamp(160px, 22vw, 300px) * 0.28);
@@ -1077,7 +1071,6 @@
   </div>
 
   <img id="bg"        src="Imagens/Plano de fundo.png" alt="">
-  <img id="logo"      src="Imagens/Logo.png"           alt="Dungeon Timer">
   <div id="version-tag">v1.2.0</div>
   <div id="char-shadow"      class="ground-shadow"></div>
   <div id="chest-shadow"     class="ground-shadow"></div>
