@@ -699,11 +699,63 @@
     .inv-footer { display: flex; justify-content: center; margin-top: 10px; }
 
     .hidden { display: none !important; }
+
+    /* ── Auth button ── */
+    #auth-wrap {
+      position: fixed; top: 14px; right: 14px; z-index: 22;
+      display: flex; flex-direction: column; align-items: flex-end;
+    }
+    #auth-login-btn {
+      background: rgba(20,10,2,0.88); border: 1px solid #7A5A10;
+      border-radius: 8px; color: #DFC880; font-family: inherit;
+      font-size: 1.3rem; padding: 6px 16px; cursor: pointer;
+      text-shadow: 0 2px 8px rgba(0,0,0,1);
+      transition: border-color 0.15s, background 0.15s;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+    }
+    #auth-login-btn:hover { border-color: #C8960E; background: rgba(60,40,8,0.9); }
+    #auth-user-btn {
+      background: rgba(20,10,2,0.88); border: 1px solid #7A5A10;
+      border-radius: 8px; color: #DFC880; font-family: inherit;
+      font-size: 1.2rem; padding: 4px 12px 4px 6px; cursor: pointer;
+      display: none; align-items: center; gap: 8px;
+      text-shadow: 0 2px 8px rgba(0,0,0,1);
+      transition: border-color 0.15s;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+    }
+    #auth-user-btn:hover { border-color: #C8960E; }
+    #auth-avatar { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #C8960E; object-fit: cover; }
+    #auth-dropdown {
+      display: none; margin-top: 4px;
+      background: rgba(8,4,1,0.98); border: 1px solid #7A5A10;
+      border-radius: 8px; overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.9); min-width: 160px;
+    }
+    #auth-dropdown button {
+      display: block; width: 100%; text-align: left;
+      background: none; border: none; color: #DFC880;
+      font-family: inherit; font-size: 1.2rem;
+      padding: 10px 16px; cursor: pointer;
+      transition: background 0.12s;
+    }
+    #auth-dropdown button:hover { background: rgba(120,90,14,0.3); }
   </style>
 </head>
 <body>
 
   <audio id="bg-music" src="Musica/Musica.mp3" loop></audio>
+
+  <div id="auth-wrap">
+    <button id="auth-login-btn" onclick="signInWithGoogle()">Entrar</button>
+    <button id="auth-user-btn" onclick="toggleAuthDropdown()">
+      <img id="auth-avatar" src="" alt="">
+      <span id="auth-name"></span>
+      <span style="color:#7A5A10;font-size:0.85em">▾</span>
+    </button>
+    <div id="auth-dropdown">
+      <button onclick="doSignOut()">Sair da conta</button>
+    </div>
+  </div>
 
   <button id="silent-btn"  onclick="toggleSilentMode()" title="Alternar modo silencioso">Silencioso</button>
   <button id="reports-btn" onclick="openReports()">Relatorios</button>
@@ -860,8 +912,26 @@
     <div class="tt-rarity" id="tt-rarity"></div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
   <script>
   'use strict';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyApWhgL-MC94pDOfnz2C3tAJy6g-TtK1Gk",
+    authDomain: "dungeon-timer-18730.firebaseapp.com",
+    projectId: "dungeon-timer-18730",
+    storageBucket: "dungeon-timer-18730.firebasestorage.app",
+    messagingSenderId: "360887449591",
+    appId: "1:360887449591:web:00e8c3814fdc63bf8120f2",
+    measurementId: "G-ZYMDWZTBBQ"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+  let currentUser = null;
 
   // ── Rarities ─────────────────────────────────────────────────
   const RARITIES = {
@@ -1515,7 +1585,7 @@
     try { const d=JSON.parse(localStorage.getItem(SESSION_SK)); if(d) sessionHistory=d; } catch(_) {}
   }
 
-  function saveSessions() { localStorage.setItem(SESSION_SK, JSON.stringify(sessionHistory)); }
+  function saveSessions() { localStorage.setItem(SESSION_SK, JSON.stringify(sessionHistory)); scheduleFirestoreSave(); }
 
   function fmtDuration(secs) {
     const h=Math.floor(secs/3600), m=Math.floor((secs%3600)/60), s=secs%60;
@@ -1873,6 +1943,127 @@
     });
   }
 
+  // ── Firebase / Auth ──────────────────────────────────────────
+  const SK_LS = 'dt_v7'; // same as SK but referenced here for clarity
+
+  function buildSaveData() {
+    return {
+      earnedItems,
+      earnedMobs,
+      placedHats: placedHats.map(h=>({itemId:h.itemId,x:h.x,y:h.y,size:h.size,rotation:h.rotation||0,flipped:h.flipped||false})),
+      placedMobs: placedMobs.map(m=>({mobId:m.mobId,x:m.x,y:m.y,size:m.size,rotation:m.rotation||0,flipped:m.flipped||false})),
+      sessionHistory,
+      hatIntervalM,
+      silentMode,
+    };
+  }
+
+  let firestoreSaveTimer = null;
+  function scheduleFirestoreSave() {
+    if (!currentUser) return;
+    clearTimeout(firestoreSaveTimer);
+    firestoreSaveTimer = setTimeout(async () => {
+      try {
+        await db.collection('users').doc(currentUser.uid).set(buildSaveData(), { merge: true });
+      } catch(e) { console.warn('Firestore save failed:', e); }
+    }, 2000);
+  }
+
+  function clearAllPlaced() {
+    placedHats.forEach(h => h.el.remove());
+    placedHats = [];
+    placedMobs.forEach(m => { m.el.remove(); if (m.shadowEl) m.shadowEl.remove(); });
+    placedMobs = [];
+    drawGrip();
+  }
+
+  function applyUserData(data) {
+    clearAllPlaced();
+    earnedItems    = data.earnedItems    || [];
+    earnedMobs     = data.earnedMobs     || [];
+    sessionHistory = data.sessionHistory || [];
+    if (data.silentMode !== undefined) silentMode = data.silentMode;
+    if (data.hatIntervalM) hatIntervalM = data.hatIntervalM;
+
+    for (const ph of (data.placedHats||[])) {
+      if (ITEMS[ph.itemId]) placedHats.push(createPlacedHat(ph.itemId,ph.x,ph.y,ph.size,ph.rotation||0,ph.flipped||false));
+    }
+    for (const pm of (data.placedMobs||[])) {
+      if (MOBS[pm.mobId]) placedMobs.push(createPlacedMob(pm.mobId,pm.x,pm.y,pm.size,pm.rotation||0,pm.flipped||false));
+    }
+
+    document.getElementById('silent-btn')?.classList.toggle('active', silentMode);
+
+    // Update local cache (no Firestore re-save needed)
+    localStorage.setItem('dt_v7', JSON.stringify({ earnedItems, hatIntervalM, placedHats: placedHats.map(h=>({itemId:h.itemId,x:h.x,y:h.y,size:h.size,rotation:h.rotation||0,flipped:h.flipped||false})) }));
+    localStorage.setItem('dt_mobs_v1', JSON.stringify({ earnedMobs, placedMobs: placedMobs.map(m=>({mobId:m.mobId,x:m.x,y:m.y,size:m.size,rotation:m.rotation||0,flipped:m.flipped||false})) }));
+    localStorage.setItem('dt_sessions_v1', JSON.stringify(sessionHistory));
+
+    requestAnimationFrame(() => { positionChest(); positionShadows(); drawGrip(); });
+  }
+
+  async function loadFromFirestore(uid) {
+    try {
+      const docRef = db.collection('users').doc(uid);
+      const snap   = await docRef.get();
+      if (snap.exists) {
+        applyUserData(snap.data());
+      } else {
+        // First login — migrate local data to Firestore
+        const data = buildSaveData();
+        data.isPremium = false;
+        data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        await docRef.set(data);
+      }
+    } catch(e) { console.warn('Firestore load failed:', e); }
+  }
+
+  function updateAuthUI(user) {
+    const loginBtn = document.getElementById('auth-login-btn');
+    const userBtn  = document.getElementById('auth-user-btn');
+    if (!loginBtn || !userBtn) return;
+    if (user) {
+      loginBtn.style.display  = 'none';
+      userBtn.style.display   = 'flex';
+      document.getElementById('auth-avatar').src = user.photoURL || '';
+      document.getElementById('auth-avatar').style.display = user.photoURL ? '' : 'none';
+      document.getElementById('auth-name').textContent = (user.displayName||'Aventureiro').split(' ')[0];
+    } else {
+      loginBtn.style.display = '';
+      userBtn.style.display  = 'none';
+      document.getElementById('auth-dropdown').style.display = 'none';
+    }
+  }
+
+  function signInWithGoogle() {
+    auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+      .catch(e => console.error('Sign-in failed:', e));
+  }
+
+  function doSignOut() {
+    auth.signOut();
+  }
+
+  function toggleAuthDropdown() {
+    const dd = document.getElementById('auth-dropdown');
+    dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', e => {
+    const wrap = document.getElementById('auth-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      const dd = document.getElementById('auth-dropdown');
+      if (dd) dd.style.display = 'none';
+    }
+  }, true);
+
+  auth.onAuthStateChanged(async user => {
+    currentUser = user;
+    updateAuthUI(user);
+    if (user) await loadFromFirestore(user.uid);
+  });
+
   // ── Catalog ──────────────────────────────────────────────────
   const CAT_TABS = [
     { id:'hats',    label:'Chapeus' },
@@ -1968,6 +2159,7 @@
       earnedItems, hatIntervalM,
       placedHats: placedHats.map(h=>({itemId:h.itemId,x:h.x,y:h.y,size:h.size,rotation:h.rotation||0,flipped:h.flipped||false})),
     }));
+    scheduleFirestoreSave();
   }
   function loadState() {
     try {
@@ -2316,6 +2508,7 @@
       earnedMobs,
       placedMobs:placedMobs.map(m=>({mobId:m.mobId,x:m.x,y:m.y,size:m.size,rotation:m.rotation||0,flipped:m.flipped||false}))
     }));
+    scheduleFirestoreSave();
   }
   function loadMobState() {
     try {
