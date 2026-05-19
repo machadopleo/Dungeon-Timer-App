@@ -1852,7 +1852,7 @@
       const W=img.naturalWidth, H=img.naturalHeight;
       const cvs=document.createElement('canvas'); cvs.width=W; cvs.height=H;
       const ctx=cvs.getContext('2d'); ctx.drawImage(img,0,0);
-      const pts=[[0.40,0.63],[0.42,0.65],[0.44,0.63],[0.46,0.65]];
+      const pts=[[0.31,0.13],[0.34,0.16],[0.37,0.13],[0.34,0.20]];
       let r=0,g=0,b=0,n=0;
       for (const [fx,fy] of pts) {
         const d=ctx.getImageData(Math.round(W*fx),Math.round(H*fy),1,1).data;
@@ -1860,8 +1860,11 @@
       }
       if (n>0) {
         r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n);
-        SKIN_HI=`rgb(${r},${g},${b})`;
-        SKIN_LO=`rgb(${Math.max(0,r-45)},${Math.max(0,g-45)},${Math.max(0,b-45)})`;
+        // Só usa a cor amostrada se parecer pele (clara o suficiente, não escura demais)
+        if (r > 100 && r >= b && r + g + b > 250) {
+          SKIN_HI=`rgb(${r},${g},${b})`;
+          SKIN_LO=`rgb(${Math.max(0,r-45)},${Math.max(0,g-45)},${Math.max(0,b-45)})`;
+        }
       }
     } catch(e) {}
   })();
