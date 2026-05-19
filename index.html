@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dungeon Timer</title>
+  <script defer src="/_vercel/insights/script.js"></script>
   <style>
     @font-face {
       font-family: 'DungeonFont';
@@ -33,7 +34,7 @@
     }
     #session-type-modal h3 { color: #EAD89E; font-size: 2.2rem; margin-bottom: 8px; }
     #session-type-modal p  { color: #907838; font-size: 1.1rem; margin-bottom: 22px; }
-    #session-type-btns { display: flex; gap: 14px; justify-content: center; }
+    #session-type-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; max-width: 480px; margin: 0 auto; }
     .session-type-btn {
       background: rgba(80,60,10,0.3); border: 1px solid #7A5A10;
       color: #DFC880; font-family: inherit; font-size: 1.5rem;
@@ -719,9 +720,10 @@
       object-fit: contain; image-rendering: crisp-edges; pointer-events: none;
     }
     .inv-slot-empty { cursor: default; }
-    .inv-slot.rarity-common   img { filter: drop-shadow(0 0 6px rgba(210,210,210,0.85)); }
-    .inv-slot.rarity-uncommon img { filter: drop-shadow(0 0 7px rgba(80,140,255,0.9)) drop-shadow(0 0 14px rgba(60,100,220,0.5)); }
-    .inv-slot.rarity-rare     img { filter: drop-shadow(0 0 8px rgba(255,195,20,0.95)) drop-shadow(0 0 18px rgba(220,140,0,0.6)); }
+    .inv-slot.rarity-common    img { filter: drop-shadow(0 0 6px rgba(210,210,210,0.85)); }
+    .inv-slot.rarity-uncommon  img { filter: drop-shadow(0 0 7px rgba(80,140,255,0.9)) drop-shadow(0 0 14px rgba(60,100,220,0.5)); }
+    .inv-slot.rarity-rare      img { filter: drop-shadow(0 0 8px rgba(255,195,20,0.95)) drop-shadow(0 0 18px rgba(220,140,0,0.6)); }
+    .inv-slot.rarity-legendary img { filter: drop-shadow(0 0 10px rgba(200,80,255,0.95)) drop-shadow(0 0 22px rgba(160,40,220,0.7)) drop-shadow(0 0 4px rgba(255,200,255,0.6)); }
     .inv-footer { display: flex; justify-content: center; margin-top: 10px; }
 
     .hidden { display: none !important; }
@@ -999,6 +1001,8 @@
     <div id="session-type-btns">
       <button class="session-type-btn" onclick="startSession('leitura')">Leitura</button>
       <button class="session-type-btn" onclick="startSession('trabalho')">Trabalho</button>
+      <button class="session-type-btn" onclick="startSession('estudos')">Estudos</button>
+      <button class="session-type-btn" onclick="startSession('outros')">Outros</button>
     </div>
   </div>
 
@@ -1028,16 +1032,20 @@
           <button class="rep-filter active" data-type="all"      onclick="setRepType('all')">Todos</button>
           <button class="rep-filter"        data-type="leitura"  onclick="setRepType('leitura')">Leitura</button>
           <button class="rep-filter"        data-type="trabalho" onclick="setRepType('trabalho')">Trabalho</button>
+          <button class="rep-filter"        data-type="estudos"  onclick="setRepType('estudos')">Estudos</button>
+          <button class="rep-filter"        data-type="outros"   onclick="setRepType('outros')">Outros</button>
         </div>
       </div>
       <div id="rep-stat-cards"></div>
       <div id="rep-charts">
         <div class="rep-chart-wrap">
-          <div class="rep-chart-title">Leitura vs Trabalho</div>
+          <div class="rep-chart-title">Distribuicao por tipo</div>
           <canvas id="donut-canvas" width="180" height="180"></canvas>
           <div class="rep-chart-legend">
             <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#5B9BD5"></div>Leitura</div>
             <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#C8960E"></div>Trabalho</div>
+            <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#6AAA6A"></div>Estudos</div>
+            <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#9B7BD5"></div>Outros</div>
           </div>
         </div>
         <div class="rep-chart-wrap" style="display:flex;flex-direction:column;">
@@ -1222,9 +1230,10 @@
 
   // ── Rarities ─────────────────────────────────────────────────
   const RARITIES = {
-    common:   { weight: 10, label: 'Comum',   glow: 'rgba(210,210,210,0.85)' },
-    uncommon: { weight: 4,  label: 'Incomum',  glow: 'rgba(80,140,255,0.9)'  },
-    rare:     { weight: 2,  label: 'Raro',     glow: 'rgba(255,195,20,0.95)' },
+    common:    { weight: 100, label: 'Comum',    glow: 'rgba(210,210,210,0.85)' },
+    uncommon:  { weight: 30,  label: 'Incomum',  glow: 'rgba(80,140,255,0.9)'  },
+    rare:      { weight: 8,   label: 'Raro',     glow: 'rgba(255,195,20,0.95)' },
+    legendary: { weight: 1,   label: 'Lendario', glow: 'rgba(200,80,255,0.95)' },
   };
 
   // ── Categories & Items ───────────────────────────────────────
@@ -1248,17 +1257,28 @@
     hat11: { id:'hat11', cat:'hats',    rarity:'uncommon', name:'Touca de Cozinheiro',    file:'Imagens/Chapeus/Hat 11.png' },
     hat12: { id:'hat12', cat:'hats',    rarity:'rare',     name:'Slime Verde',            file:'Imagens/Chapeus/Hat 12.png' },
     hat13: { id:'hat13', cat:'hats',    rarity:'uncommon', name:'Morcego',                file:'Imagens/Chapeus/Hat 13.png' },
-    weapon1:{ id:'weapon1', cat:'weapons', rarity:'common',   name:'Adaga',              file:'Imagens/Armas/Arma 1.png' },
-    weapon2:{ id:'weapon2', cat:'weapons', rarity:'common',   name:'Machado',            file:'Imagens/Armas/Arma 2.png' },
-    weapon3:{ id:'weapon3', cat:'weapons', rarity:'uncommon', name:'Maca Cravejada',     file:'Imagens/Armas/Arma 3.png' },
-    weapon4:{ id:'weapon4', cat:'weapons', rarity:'uncommon', name:'Arco',               file:'Imagens/Armas/Arma 4.png' },
-    weapon5:{ id:'weapon5', cat:'weapons', rarity:'rare',     name:'Espada da Morte',    file:'Imagens/Armas/Arma 5.png' },
-    shield1:{ id:'shield1', cat:'shields', rarity:'common',   name:'Escudo de Madeira',  file:'Imagens/Escudos/Escudo 1.png' },
-    shield2:{ id:'shield2', cat:'shields', rarity:'common',   name:'Escudo da Cruz',     file:'Imagens/Escudos/Escudo 2.png' },
-    shield3:{ id:'shield3', cat:'shields', rarity:'uncommon', name:'Escudo das Caveiras',file:'Imagens/Escudos/Escudo 3.png' },
-    shield4:{ id:'shield4', cat:'shields', rarity:'uncommon', name:'Escudo Solar',       file:'Imagens/Escudos/Escudo 4.png' },
-    shield5:{ id:'shield5', cat:'shields', rarity:'common',   name:'Tabua de Madeira',   file:'Imagens/Escudos/Escudo 5.png' },
-    shield6:{ id:'shield6', cat:'shields', rarity:'rare',     name:'Escudo Amaldicado',  file:'Imagens/Escudos/Escudo 6.png' },
+    weapon1: { id:'weapon1',  cat:'weapons', rarity:'common',    name:'Adaga',                file:'Imagens/Armas/Arma 1.png'   },
+    weapon2: { id:'weapon2',  cat:'weapons', rarity:'common',    name:'Machado',              file:'Imagens/Armas/Arma 2.png'   },
+    weapon3: { id:'weapon3',  cat:'weapons', rarity:'uncommon',  name:'Maca Cravejada',       file:'Imagens/Armas/Arma 3.png'   },
+    weapon4: { id:'weapon4',  cat:'weapons', rarity:'uncommon',  name:'Arco',                 file:'Imagens/Armas/Arma 4.png'   },
+    weapon5: { id:'weapon5',  cat:'weapons', rarity:'rare',      name:'Espada da Morte',      file:'Imagens/Armas/Arma 5.png'   },
+    weapon6: { id:'weapon6',  cat:'weapons', rarity:'common',    name:'Lanca',                file:'Imagens/Armas/Arma 6.png'   },
+    weapon7: { id:'weapon7',  cat:'weapons', rarity:'uncommon',  name:'Cajado do Mago',       file:'Imagens/Armas/Arma 7.png'   },
+    weapon8: { id:'weapon8',  cat:'weapons', rarity:'uncommon',  name:'Foice Sinistral',      file:'Imagens/Armas/Arma 8.png'   },
+    weapon9: { id:'weapon9',  cat:'weapons', rarity:'uncommon',  name:'Besta Elfica',         file:'Imagens/Armas/Arma 9.png'   },
+    weapon10:{ id:'weapon10', cat:'weapons', rarity:'rare',      name:'Martelo Trovejante',   file:'Imagens/Armas/Arma 10.png'  },
+    weapon11:{ id:'weapon11', cat:'weapons', rarity:'legendary', name:'Lamina Lendaria',      file:'Imagens/Armas/Arma 11.png'  },
+    shield1: { id:'shield1',  cat:'shields', rarity:'common',    name:'Escudo de Madeira',    file:'Imagens/Escudos/Escudo 1.png' },
+    shield2: { id:'shield2',  cat:'shields', rarity:'common',    name:'Escudo da Cruz',       file:'Imagens/Escudos/Escudo 2.png' },
+    shield3: { id:'shield3',  cat:'shields', rarity:'uncommon',  name:'Escudo das Caveiras',  file:'Imagens/Escudos/Escudo 3.png' },
+    shield4: { id:'shield4',  cat:'shields', rarity:'uncommon',  name:'Escudo Solar',         file:'Imagens/Escudos/Escudo 4.png' },
+    shield5: { id:'shield5',  cat:'shields', rarity:'common',    name:'Tabua de Madeira',     file:'Imagens/Escudos/Escudo 5.png' },
+    shield6: { id:'shield6',  cat:'shields', rarity:'rare',      name:'Escudo Amaldicado',    file:'Imagens/Escudos/Escudo 6.png' },
+    shield7: { id:'shield7',  cat:'shields', rarity:'common',    name:'Escudo de Bronze',     file:'Imagens/Escudos/Escudo 7.png' },
+    shield8: { id:'shield8',  cat:'shields', rarity:'common',    name:'Escudo do Guerreiro',  file:'Imagens/Escudos/Escudo 8.png' },
+    shield9: { id:'shield9',  cat:'shields', rarity:'uncommon',  name:'Broquel das Sombras',  file:'Imagens/Escudos/Escudo 9.png' },
+    shield10:{ id:'shield10', cat:'shields', rarity:'rare',      name:'Escudo do Dragao',     file:'Imagens/Escudos/Escudo 10.png'},
+    shield11:{ id:'shield11', cat:'shields', rarity:'legendary', name:'Egide Imortal',        file:'Imagens/Escudos/Escudo 11.png'},
   };
 
   // ── State ────────────────────────────────────────────────────
@@ -2010,17 +2030,20 @@
   }
 
   function computeStats(sessions) {
-    let totalSecs=0, leituraSecs=0, trabalhoSecs=0, longestSecs=0;
+    let totalSecs=0, leituraSecs=0, trabalhoSecs=0, estudosSecs=0, outrosSecs=0, longestSecs=0;
     let totalItems=0, completed=0;
     sessions.forEach(sess => {
       const dur = sess.duration || 0;
       totalSecs += dur;
-      if (sess.type === 'leitura') leituraSecs += dur; else trabalhoSecs += dur;
+      if      (sess.type === 'leitura')  leituraSecs  += dur;
+      else if (sess.type === 'trabalho') trabalhoSecs += dur;
+      else if (sess.type === 'estudos')  estudosSecs  += dur;
+      else                               outrosSecs   += dur;
       if (sess.completed) completed++;
       totalItems += (sess.itemsEarned || []).length;
       if (dur > longestSecs) longestSecs = dur;
     });
-    return { totalSecs, leituraSecs, trabalhoSecs, longestSecs,
+    return { totalSecs, leituraSecs, trabalhoSecs, estudosSecs, outrosSecs, longestSecs,
              totalSessions: sessions.length, completed, totalItems };
   }
 
@@ -2046,9 +2069,11 @@
       } else {
         key = (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getFullYear();
       }
-      if (!groups[key]) groups[key] = { leitura: 0, trabalho: 0 };
-      if (sess.type === 'leitura') groups[key].leitura += (sess.duration || 0);
-      else groups[key].trabalho += (sess.duration || 0);
+      if (!groups[key]) groups[key] = { leitura: 0, trabalho: 0, estudos: 0, outros: 0 };
+      if      (sess.type === 'leitura')  groups[key].leitura  += (sess.duration || 0);
+      else if (sess.type === 'trabalho') groups[key].trabalho += (sess.duration || 0);
+      else if (sess.type === 'estudos')  groups[key].estudos  += (sess.duration || 0);
+      else                               groups[key].outros   += (sess.duration || 0);
     });
     return groups;
   }
@@ -2067,6 +2092,8 @@
         { label:'Total de Foco',       value: fmtHours(stats.totalSecs)     },
         { label:'Leitura',             value: fmtHours(stats.leituraSecs)   },
         { label:'Trabalho',            value: fmtHours(stats.trabalhoSecs)  },
+        { label:'Estudos',             value: fmtHours(stats.estudosSecs)   },
+        { label:'Outros',              value: fmtHours(stats.outrosSecs)    },
         { label:'Sessoes',             value: stats.totalSessions            },
         { label:'Concluidas',          value: stats.completed                },
         { label:'Itens Ganhos',        value: stats.totalItems               },
@@ -2095,7 +2122,13 @@
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
     const cx = W/2, cy = H/2, r = Math.min(W,H)/2 - 10, innerR = r * 0.52;
-    const total = stats.leituraSecs + stats.trabalhoSecs;
+    const segs = [
+      { v: stats.leituraSecs,  c: '#5B9BD5', label: 'leitura'  },
+      { v: stats.trabalhoSecs, c: '#C8960E', label: 'trabalho' },
+      { v: stats.estudosSecs,  c: '#6AAA6A', label: 'estudos'  },
+      { v: stats.outrosSecs,   c: '#9B7BD5', label: 'outros'   },
+    ];
+    const total = segs.reduce((s, sg) => s + sg.v, 0);
 
     if (!total) {
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
@@ -2107,10 +2140,6 @@
       return;
     }
 
-    const segs = [
-      { v: stats.leituraSecs,  c: '#5B9BD5' },
-      { v: stats.trabalhoSecs, c: '#C8960E' },
-    ];
     let ang = -Math.PI / 2;
     segs.forEach(seg => {
       if (!seg.v) return;
@@ -2123,11 +2152,12 @@
     ctx.beginPath(); ctx.arc(cx, cy, innerR, 0, Math.PI*2);
     ctx.fillStyle = '#080401'; ctx.fill();
 
-    const pct = Math.round(stats.leituraSecs / total * 100);
+    const dominant = segs.reduce((a, b) => b.v > a.v ? b : a);
+    const pct = Math.round(dominant.v / total * 100);
     ctx.fillStyle = '#EAD89E'; ctx.textAlign = 'center';
     ctx.font = 'bold 18px sans-serif'; ctx.fillText(pct + '%', cx, cy + 2);
     ctx.font = '11px sans-serif'; ctx.fillStyle = '#907838';
-    ctx.fillText('leitura', cx, cy + 16);
+    ctx.fillText(dominant.label, cx, cy + 16);
   }
 
   function drawBarChart(groups) {
@@ -2144,7 +2174,7 @@
 
     const PL=44, PR=10, PT=12, PB=34;
     const cW = W-PL-PR, cH = H-PT-PB;
-    const maxH = Math.max(...keys.map(k => (groups[k].leitura+groups[k].trabalho)/3600)) || 1;
+    const maxH = Math.max(...keys.map(k => (groups[k].leitura+groups[k].trabalho+groups[k].estudos+groups[k].outros)/3600)) || 1;
 
     // Grid
     for (let i=0; i<=4; i++) {
@@ -2159,11 +2189,16 @@
     const bW = Math.max(4, Math.min(gW*0.65, 38));
     keys.forEach((key, i) => {
       const g = groups[key];
-      const lH = (g.leitura/3600/maxH)*cH;
       const tH = (g.trabalho/3600/maxH)*cH;
+      const lH = (g.leitura/3600/maxH)*cH;
+      const eH = (g.estudos/3600/maxH)*cH;
+      const oH = (g.outros/3600/maxH)*cH;
       const x  = PL + gW*i + (gW-bW)/2;
-      if (tH > 0) { ctx.fillStyle='#C8960E'; ctx.fillRect(x, PT+cH-tH, bW, tH); }
-      if (lH > 0) { ctx.fillStyle='#5B9BD5'; ctx.fillRect(x, PT+cH-tH-lH, bW, lH); }
+      let yOff = PT + cH;
+      if (tH > 0) { yOff -= tH; ctx.fillStyle='#C8960E'; ctx.fillRect(x, yOff, bW, tH); }
+      if (lH > 0) { yOff -= lH; ctx.fillStyle='#5B9BD5'; ctx.fillRect(x, yOff, bW, lH); }
+      if (eH > 0) { yOff -= eH; ctx.fillStyle='#6AAA6A'; ctx.fillRect(x, yOff, bW, eH); }
+      if (oH > 0) { yOff -= oH; ctx.fillStyle='#9B7BD5'; ctx.fillRect(x, yOff, bW, oH); }
       ctx.fillStyle='#7A6030'; ctx.textAlign='center'; ctx.font='9px sans-serif';
       ctx.fillText(key, PL+gW*i+gW/2, H-6);
     });
@@ -2920,17 +2955,14 @@
     const entries = isMob
       ? Object.values(MOBS)
       : Object.values(ITEMS).filter(it => it.cat === activeCatTab);
-    const RORDER = { common:0, uncommon:1, rare:2 };
+    const RORDER = { common:0, uncommon:1, rare:2, legendary:3 };
     entries.sort((a,b) => RORDER[a.rarity] - RORDER[b.rarity]);
-    const rates = computeDropRates();
 
     const viewItems = catalogViewingFriend ? catalogViewingFriend.earnedItems : earnedItems;
     const viewMobs  = catalogViewingFriend ? catalogViewingFriend.earnedMobs  : earnedMobs;
     entries.forEach(entry => {
       const discovered = isMob ? viewMobs.includes(entry.id) : viewItems.includes(entry.id);
       const rarity = isMob ? MOB_RARITIES[entry.rarity] : RARITIES[entry.rarity];
-      const rate   = rates[entry.id];
-      const rateTxt = rate < 0.1 ? rate.toFixed(2) : rate < 1 ? rate.toFixed(1) : rate.toFixed(1);
 
       const card = document.createElement('div');
       card.className = 'cat-card ' + (discovered ? 'discovered' : 'undiscovered');
@@ -2949,11 +2981,6 @@
       name.className = 'cat-name';
       name.textContent = discovered ? entry.name : '???';
       card.appendChild(name);
-
-      const drop = document.createElement('div');
-      drop.className = 'cat-drop';
-      drop.textContent = rateTxt + '%';
-      card.appendChild(drop);
 
       grid.appendChild(card);
     });
@@ -3175,19 +3202,24 @@
 
   // ── Mobs ─────────────────────────────────────────────────────
   const MOB_RARITIES = {
-    common:   { weight: 3,   label:'Comum',  glow:'rgba(210,210,210,0.85)' },
-    uncommon: { weight: 1.5, label:'Incomum', glow:'rgba(80,140,255,0.9)'  },
-    rare:     { weight: 0.5, label:'Raro',    glow:'rgba(255,195,20,0.95)' },
+    common:    { weight: 25,  label:'Comum',    glow:'rgba(210,210,210,0.85)' },
+    uncommon:  { weight: 8,   label:'Incomum',  glow:'rgba(80,140,255,0.9)'  },
+    rare:      { weight: 2,   label:'Raro',     glow:'rgba(255,195,20,0.95)' },
+    legendary: { weight: 0.3, label:'Lendario', glow:'rgba(200,80,255,0.95)' },
   };
   const MOBS = {
-    mob1: { id:'mob1', rarity:'common',   name:'Zumbi Guerreiro', file:'Imagens/Mobs/Mob 1.png' },
-    mob2: { id:'mob2', rarity:'common',   name:'Goblin',          file:'Imagens/Mobs/Mob 2.png' },
-    mob3: { id:'mob3', rarity:'uncommon', name:'Slime Mau',       file:'Imagens/Mobs/Mob 3.png' },
-    mob4: { id:'mob4', rarity:'common',   name:'Morcego',         file:'Imagens/Mobs/Mob 4.png' },
-    mob5: { id:'mob5', rarity:'common',   name:'Slime Amigavel',  file:'Imagens/Mobs/Mob 5.png' },
-    mob6: { id:'mob6', rarity:'uncommon', name:'Orc',             file:'Imagens/Mobs/Mob 6.png' },
-    mob7: { id:'mob7', rarity:'uncommon', name:'Zumbi Podre',     file:'Imagens/Mobs/Mob 7.png' },
-    mob8: { id:'mob8', rarity:'rare',     name:'Dragao Vermelho', file:'Imagens/Mobs/Mob 8.png' },
+    mob1:  { id:'mob1',  rarity:'common',    name:'Zumbi Guerreiro',    file:'Imagens/Mobs/Mob 1.png'  },
+    mob2:  { id:'mob2',  rarity:'common',    name:'Goblin',             file:'Imagens/Mobs/Mob 2.png'  },
+    mob3:  { id:'mob3',  rarity:'uncommon',  name:'Slime Mau',          file:'Imagens/Mobs/Mob 3.png'  },
+    mob4:  { id:'mob4',  rarity:'common',    name:'Morcego',            file:'Imagens/Mobs/Mob 4.png'  },
+    mob5:  { id:'mob5',  rarity:'common',    name:'Slime Amigavel',     file:'Imagens/Mobs/Mob 5.png'  },
+    mob6:  { id:'mob6',  rarity:'uncommon',  name:'Orc',                file:'Imagens/Mobs/Mob 6.png'  },
+    mob7:  { id:'mob7',  rarity:'uncommon',  name:'Zumbi Podre',        file:'Imagens/Mobs/Mob 7.png'  },
+    mob8:  { id:'mob8',  rarity:'rare',      name:'Dragao Vermelho',    file:'Imagens/Mobs/Mob 8.png'  },
+    mob9:  { id:'mob9',  rarity:'common',    name:'Esqueleto Arqueiro', file:'Imagens/Mobs/Mob 9.png'  },
+    mob10: { id:'mob10', rarity:'uncommon',  name:'Troll das Pedras',   file:'Imagens/Mobs/Mob 10.png' },
+    mob11: { id:'mob11', rarity:'rare',      name:'Bruxa Sombria',      file:'Imagens/Mobs/Mob 11.png' },
+    mob12: { id:'mob12', rarity:'legendary', name:'Lorde das Trevas',   file:'Imagens/Mobs/Mob 12.png' },
   };
   const MAX_MOBS = 3;
   let placedMobs = [];
