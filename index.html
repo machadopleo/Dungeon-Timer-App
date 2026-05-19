@@ -44,6 +44,28 @@
     .session-type-btn:hover  { background: rgba(120,90,16,0.5); border-color: #C8960E; }
     .session-type-btn:active { transform: scale(0.97); }
 
+    /* ── Session run tab ── */
+    #inv-session-grid { display:flex; flex-wrap:wrap; gap:10px; padding:6px 2px; }
+    .session-item-card {
+      display:flex; flex-direction:column; align-items:center; gap:4px;
+      background:rgba(20,10,2,0.6); border:1px solid #3A2808;
+      border-radius:8px; padding:8px 6px; width:88px;
+    }
+    .session-item-card img { width:54px; height:54px; object-fit:contain; image-rendering:crisp-edges; }
+    .session-item-card .si-name { color:#DFC880; font-size:0.95rem; text-align:center; line-height:1.2; }
+    .session-item-card .si-new  { color:#80D860; font-size:0.85rem; border:1px solid #4A8A10; border-radius:4px; padding:0 5px; }
+    .session-item-card .si-rep  { color:#5A4020; font-size:0.85rem; border:1px solid #3A2808; border-radius:4px; padding:0 5px; }
+
+    /* ── Recovery lost items grid ── */
+    #recovery-lost-items {
+      display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+      max-height:130px; overflow-y:auto; margin:8px 0 16px;
+      scrollbar-width:thin; scrollbar-color:#7A5A10 transparent;
+    }
+    .recovery-lost-card { display:flex; flex-direction:column; align-items:center; gap:3px; width:68px; }
+    .recovery-lost-card img { width:46px; height:46px; object-fit:contain; image-rendering:crisp-edges; opacity:0.75; }
+    .recovery-lost-card span { color:#C87858; font-size:0.85rem; text-align:center; line-height:1.2; }
+
     /* ── Recovery modal ── */
     #recovery-modal {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
@@ -1030,6 +1052,7 @@
     <h3>⚔ Sessao Interrompida</h3>
     <div class="recovery-info" id="recovery-info"></div>
     <div class="recovery-warn" id="recovery-warn"></div>
+    <div id="recovery-lost-items"></div>
     <div id="recovery-btns">
       <button class="recovery-btn-yes" onclick="recoverSession()">Continuar</button>
       <button class="recovery-btn-no"  onclick="discardSession()">Descartar</button>
@@ -1481,6 +1504,7 @@
       remaining = Math.max(0, remainingAtStart - elapsed);
     }
     remaining += m * 60;
+    totalTime += m * 60;
     if (!running) { totalTime = remaining; }
     else { remainingAtStart = remaining; tickStart = Date.now(); }
     document.getElementById('timer-display').classList.remove('finished');
@@ -1871,6 +1895,15 @@
   function openInventory() { buildTabs(); buildInventory(); show('inv-modal'); show('overlay'); }
   function buildTabs() {
     const c=document.getElementById('inv-tabs'); c.innerHTML='';
+    if (currentSession) {
+      const btn=document.createElement('button');
+      btn.className='inv-tab'+(activeCategory==='session'?' active':'');
+      btn.textContent='Sessao';
+      btn.onclick=()=>{ activeCategory='session'; buildTabs(); buildInventory(); };
+      c.appendChild(btn);
+    } else if (activeCategory==='session') {
+      activeCategory='hats';
+    }
     CATEGORIES.forEach(cat=>{
       const btn=document.createElement('button');
       btn.className='inv-tab'+(cat.id===activeCategory?' active':'');
@@ -1890,7 +1923,35 @@
       banner.onmouseleave = () => banner.style.borderColor = '#5A4010';
       scroll.appendChild(banner);
     }
-    const RARITY_ORDER = { common:0, uncommon:1, rare:2 };
+    // ── Aba Sessão ──────────────────────────────────────────────
+    if (activeCategory === 'session') {
+      const items = currentSession ? [...currentSession.itemsEarned].reverse() : [];
+      if (!items.length) {
+        const msg=document.createElement('div'); msg.className='inv-empty';
+        msg.textContent='Nenhum item conquistado ainda nesta sessao.';
+        scroll.appendChild(msg);
+      } else {
+        const grid=document.createElement('div'); grid.id='inv-session-grid';
+        items.forEach(it => {
+          const def = ITEMS[it.id] || MOBS[it.id]; if (!def) return;
+          const isNew = !(preSessionItems||[]).includes(it.id) && !(preSessionMobs||[]).includes(it.id);
+          const rar   = RARITIES[def.rarity] || MOB_RARITIES[def.rarity];
+          const card  = document.createElement('div'); card.className='session-item-card';
+          const img   = document.createElement('img'); img.src=def.file; img.alt=def.name;
+          img.style.filter = rar ? `drop-shadow(0 0 6px ${rar.glow})` : '';
+          const name  = document.createElement('div'); name.className='si-name'; name.textContent=def.name;
+          const badge = document.createElement('div'); badge.className=isNew?'si-new':'si-rep';
+          badge.textContent = isNew ? 'Novo!' : 'Repetido';
+          card.appendChild(img); card.appendChild(name); card.appendChild(badge);
+          grid.appendChild(card);
+        });
+        scroll.appendChild(grid);
+      }
+      const invBtn = document.getElementById('inv-collect-btn');
+      if (invBtn) invBtn.style.display = placedHats.length > 0 ? '' : 'none';
+      return;
+    }
+    const RARITY_ORDER = { common:0, uncommon:1, rare:2, legendary:3 };
     const catItems=earnedItems.map(id=>ITEMS[id]).filter(it=>it&&it.cat===activeCategory)
       .sort((a,b)=>RARITY_ORDER[a.rarity]-RARITY_ORDER[b.rarity]);
     if (!catItems.length) {
@@ -1997,11 +2058,22 @@
       document.getElementById('recovery-info').innerHTML =
         `Sessao de <strong>${typeLabel}</strong> — <strong>${timeStr}</strong> restantes` +
         (itemCount > 0 ? `<br>${itemCount} item(s) conquistado(s)` : '');
-      const newCount = (state.itemsEarned || [])
-        .filter(it => !(state.preSessionItems || []).includes(it.id)).length;
-      document.getElementById('recovery-warn').textContent = newCount > 0
-        ? `Descartar apagara ${newCount} item(s) novo(s) desta sessao.`
-        : 'Nenhum item novo sera perdido ao descartar.';
+      const newItems = (state.itemsEarned || [])
+        .filter(it => !(state.preSessionItems || []).includes(it.id) && !(state.preSessionMobs || []).includes(it.id));
+      const lostGrid = document.getElementById('recovery-lost-items');
+      lostGrid.innerHTML = '';
+      if (newItems.length > 0) {
+        document.getElementById('recovery-warn').textContent = `Descartar apagara ${newItems.length} item(s) novo(s):`;
+        newItems.forEach(it => {
+          const def = ITEMS[it.id] || MOBS[it.id]; if (!def) return;
+          const card = document.createElement('div'); card.className = 'recovery-lost-card';
+          const img = document.createElement('img'); img.src = def.file; img.alt = def.name;
+          const lbl = document.createElement('span'); lbl.textContent = def.name;
+          card.appendChild(img); card.appendChild(lbl); lostGrid.appendChild(card);
+        });
+      } else {
+        document.getElementById('recovery-warn').textContent = 'Nenhum item novo sera perdido ao descartar.';
+      }
       document.getElementById('recovery-modal').classList.remove('hidden');
       document.getElementById('overlay').classList.remove('hidden');
     } catch(e) { clearSessionRecovery(); }
