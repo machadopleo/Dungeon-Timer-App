@@ -2371,13 +2371,11 @@
     if (currentUser) {
       const _presenceRef = db.collection('users').doc(currentUser.uid);
       const _updatePresence = () => _presenceRef
-        .update({ isOnline: true, lastSeen: firebase.firestore.FieldValue.serverTimestamp(), displayName: currentUser.displayName||'', photoURL: currentUser.photoURL||'' })
+        .update({ isOnline: true, inFocus: !!running, lastSeen: firebase.firestore.FieldValue.serverTimestamp(), displayName: currentUser.displayName||'', photoURL: currentUser.photoURL||'' })
         .catch(()=>{});
       _updatePresence();
-      // Heartbeat: renova lastSeen a cada 60s enquanto a página está aberta
+      // Heartbeat: renova lastSeen + inFocus a cada 60s enquanto a página está aberta
       setInterval(_updatePresence, 60000);
-      // Renova quando volta para a aba
-      document.addEventListener('visibilitychange', () => { if (!document.hidden) _updatePresence(); });
     }
 
     updateAuthUI(currentUser);
@@ -2443,7 +2441,12 @@
   }
 
   function doSignOut() {
-    // Limpa tela e estado antes de deslogar
+    // Marca offline antes de deslogar
+    if (currentUser) {
+      db.collection('users').doc(currentUser.uid)
+        .update({ isOnline: false, inFocus: false }).catch(() => {});
+    }
+    // Limpa tela e estado
     clearAllPlaced();
     earnedItems = []; earnedMobs = []; sessionHistory = [];
     localStorage.removeItem('dt_v7');
@@ -2487,8 +2490,18 @@
     }
   }
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) onPageHide();
-    else if (running && currentUser) tick(); // retoma o timer ao voltar
+    if (document.hidden) {
+      // Troca de aba: só salva dados, não marca como offline
+      if (currentUser) flushToFirestore();
+    } else {
+      // Voltou para a aba: retoma timer e corrige presença (incluindo inFocus)
+      if (running) tick();
+      if (currentUser) {
+        db.collection('users').doc(currentUser.uid)
+          .update({ isOnline: true, inFocus: !!running, lastSeen: firebase.firestore.FieldValue.serverTimestamp() })
+          .catch(() => {});
+      }
+    }
   });
   window.addEventListener('pagehide', onPageHide);
 
