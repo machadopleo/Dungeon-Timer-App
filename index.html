@@ -801,20 +801,20 @@
 #friends-modal {
   position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
   z-index: 30; background: rgba(6,2,0,0.97); border-radius: 16px;
-  padding: 24px 28px; width: min(98vw, 440px); max-height: 80vh;
+  padding: 26px 32px; width: min(98vw, 520px); max-height: 82vh;
   box-shadow: 0 24px 70px rgba(0,0,0,0.95);
-  display: flex; flex-direction: column; gap: 14px;
+  display: flex; flex-direction: column; gap: 16px;
 }
 #friends-header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-#friends-header h3 { color: #EAD89E; font-size: 2rem; text-shadow: 0 2px 8px rgba(0,0,0,1); }
-#friends-close-btn { background: none; border: none; color: #C8960E; font-size: 1.6rem; cursor: pointer; font-family: inherit; transition: color 0.15s; }
+#friends-header h3 { color: #EAD89E; font-size: 2.4rem; text-shadow: 0 2px 8px rgba(0,0,0,1); }
+#friends-close-btn { background: none; border: none; color: #C8960E; font-size: 1.8rem; cursor: pointer; font-family: inherit; transition: color 0.15s; }
 #friends-close-btn:hover { color: #EAD89E; }
 #my-tag-row {
   background: rgba(20,10,2,0.7); border: 1px solid #3A2808; border-radius: 8px;
   padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
 }
-#my-tag-label { color: #907838; font-size: 1rem; }
-#my-tag-value { color: #EAD89E; font-size: 1.4rem; font-weight: bold; }
+#my-tag-label { color: #907838; font-size: 1.1rem; }
+#my-tag-value { color: #EAD89E; font-size: 1.6rem; font-weight: bold; }
 #copy-tag-btn {
   background: none; border: 1px solid #3A2808; border-radius: 6px;
   color: #907838; font-family: inherit; font-size: 0.95rem;
@@ -824,7 +824,7 @@
 #add-friend-row { display: flex; gap: 8px; flex-shrink: 0; }
 #add-friend-input {
   flex: 1; background: rgba(20,10,2,0.7); border: 1px solid #3A2808;
-  border-radius: 8px; color: #DFC880; font-family: inherit; font-size: 1.1rem;
+  border-radius: 8px; color: #DFC880; font-family: inherit; font-size: 1.25rem;
   padding: 8px 12px; outline: none; transition: border-color 0.15s;
 }
 #add-friend-input:focus { border-color: #7A5A10; }
@@ -843,8 +843,8 @@
 #friends-scroll::-webkit-scrollbar { width: 6px; }
 #friends-scroll::-webkit-scrollbar-thumb { background: #7A5A10; border-radius: 3px; }
 .friends-section-title {
-  color: #5A4020; font-family: inherit; font-size: 0.88rem;
-  margin: 10px 0 6px; letter-spacing: 1px; text-transform: uppercase;
+  color: #5A4020; font-family: inherit; font-size: 1rem;
+  margin: 12px 0 8px; letter-spacing: 1px; text-transform: uppercase;
 }
 .friend-card {
   display: flex; align-items: center; gap: 10px;
@@ -858,8 +858,8 @@
   color: #7A6030; font-size: 1.2rem; flex-shrink: 0; font-family: inherit;
 }
 .friend-info { flex: 1; min-width: 0; }
-.friend-name { color: #DFC880; font-size: 1.05rem; font-family: inherit; }
-.friend-tag  { color: #5A4020; font-size: 0.85rem; font-family: inherit; }
+.friend-name { color: #DFC880; font-size: 1.2rem; font-family: inherit; }
+.friend-tag  { color: #5A4020; font-size: 1rem;   font-family: inherit; }
 .friend-status { display: flex; align-items: center; gap: 5px; margin-top: 3px; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .status-dot.focus  { background: #6AAA6A; box-shadow: 0 0 6px rgba(100,200,100,0.5); }
@@ -869,7 +869,12 @@
 .status-txt.focus  { color: #6AAA6A; }
 .status-txt.online { color: #C8960E; }
 .status-txt.idle   { color: #3A3020; }
-.friend-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.friend-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.friend-unread-dot {
+  width: 10px; height: 10px; border-radius: 50%; background: #D03030;
+  border: 2px solid rgba(6,2,0,0.9); flex-shrink: 0;
+  animation: badgePulse 2s ease-in-out infinite;
+}
 .friend-btn {
   background: none; border: 1px solid #3A2808; border-radius: 6px;
   font-family: inherit; font-size: 1.05rem; padding: 4px 12px; cursor: pointer; transition: all 0.15s;
@@ -878,7 +883,8 @@
 .friend-btn.accept:hover { border-color: #6AAA6A; background: rgba(100,180,100,0.1); }
 .friend-btn.decline { color: #C06040; }
 .friend-btn.decline:hover { border-color: #C06040; background: rgba(200,80,40,0.1); }
-.friends-empty { color: #3A2808; font-size: 1rem; text-align: center; padding: 20px; font-family: inherit; }
+.friends-empty { color: #3A2808; font-size: 1.15rem; text-align: center; padding: 24px; font-family: inherit; }
+.status-txt    { font-size: 0.95rem; font-family: inherit; }
 
 /* ── Chat Modal ── */
 #chat-modal {
@@ -2352,11 +2358,17 @@
       } catch(e) { console.warn('Tag generation failed:', e); }
     }
 
-    // Mark user as online
+    // Mark user as online with heartbeat timestamp
     if (currentUser) {
-      db.collection('users').doc(currentUser.uid)
-        .update({ isOnline: true, displayName: currentUser.displayName||'', photoURL: currentUser.photoURL||'' })
+      const _presenceRef = db.collection('users').doc(currentUser.uid);
+      const _updatePresence = () => _presenceRef
+        .update({ isOnline: true, lastSeen: firebase.firestore.FieldValue.serverTimestamp(), displayName: currentUser.displayName||'', photoURL: currentUser.photoURL||'' })
         .catch(()=>{});
+      _updatePresence();
+      // Heartbeat: renova lastSeen a cada 60s enquanto a página está aberta
+      setInterval(_updatePresence, 60000);
+      // Renova quando volta para a aba
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) _updatePresence(); });
     }
 
     updateAuthUI(currentUser);
@@ -2388,7 +2400,7 @@
   function updateFriendsBadge() {
     const badge = document.getElementById('friends-badge');
     if (!badge) return;
-    const hasNotif = pendingRequests.length > 0 || _hasUnreadChats;
+    const hasNotif = pendingRequests.length > 0 || _unreadFromUids.size > 0;
     badge.style.display = hasNotif ? 'block' : 'none';
   }
 
@@ -2468,7 +2480,7 @@
   let _reqUnsub        = null;
   let _acceptUnsub     = null;
   let _chatBadgeUnsub  = null;
-  let _hasUnreadChats  = false;
+  let _unreadFromUids  = new Set(); // UIDs de amigos com mensagens não lidas
 
   async function generateUniqueTag() {
     for (let i = 0; i < 30; i++) {
@@ -2515,8 +2527,18 @@
     _chatBadgeUnsub = db.collection('chats')
       .where('members', 'array-contains', currentUser.uid)
       .onSnapshot(snap => {
-        _hasUnreadChats = snap.docs.some(d => (d.data().unreadFor||[]).includes(currentUser.uid));
+        _unreadFromUids = new Set();
+        snap.docs.forEach(d => {
+          const data = d.data();
+          if ((data.unreadFor||[]).includes(currentUser.uid)) {
+            // O outro membro do chat é quem mandou a mensagem não lida
+            const other = (data.members||[]).find(u => u !== currentUser.uid);
+            if (other) _unreadFromUids.add(other);
+          }
+        });
         updateFriendsBadge();
+        // Rebuildamos a lista se o modal estiver aberto
+        if (!document.getElementById('friends-modal').classList.contains('hidden')) buildFriendsModal();
       });
 
     // Accepted requests I sent → add to my friends list
@@ -2543,7 +2565,7 @@
       const unsub = db.collection('users').doc(uid).onSnapshot(snap => {
         if (!snap.exists) return;
         const d = snap.data();
-        const friend = { uid, name: d.displayName||'Aventureiro', tag: d.tag||'????', photoURL: d.photoURL||'', inFocus: d.inFocus||false, isOnline: d.isOnline||false, focusStartedAt: d.focusStartedAt };
+        const friend = { uid, name: d.displayName||'Aventureiro', tag: d.tag||'????', photoURL: d.photoURL||'', inFocus: d.inFocus||false, isOnline: d.isOnline||false, lastSeen: d.lastSeen, focusStartedAt: d.focusStartedAt };
         const idx = friendsData.findIndex(f => f.uid === uid);
         if (idx >= 0) friendsData[idx] = friend; else friendsData.push(friend);
         if (!document.getElementById('friends-modal').classList.contains('hidden')) buildFriendsModal();
@@ -2604,9 +2626,10 @@
       ? `<img class="friend-avatar" src="${f.photoURL}" alt="">`
       : `<div class="friend-avatar-ph">${(f.name||'?')[0]}</div>`;
     let cls, label;
-    if (f.inFocus)       { cls = 'focus';  label = 'Em foco' + fmtFocusTime(f.focusStartedAt); }
-    else if (f.isOnline) { cls = 'online'; label = 'Online'; }
-    else                 { cls = 'idle';   label = 'Offline'; }
+    const recentlySeen = f.lastSeen && (Date.now() / 1000 - f.lastSeen.seconds) < 180;
+    if (f.inFocus)                     { cls = 'focus';  label = 'Em foco' + fmtFocusTime(f.focusStartedAt); }
+    else if (f.isOnline && recentlySeen) { cls = 'online'; label = 'Online'; }
+    else                               { cls = 'idle';   label = 'Offline'; }
     const msgBtn = document.createElement('button');
     msgBtn.className = 'friend-btn';
     msgBtn.textContent = '💬';
@@ -2614,6 +2637,12 @@
     msgBtn.onclick = () => openChat(f);
     const actions = document.createElement('div');
     actions.className = 'friend-actions';
+    if (_unreadFromUids.has(f.uid)) {
+      const dot = document.createElement('div');
+      dot.className = 'friend-unread-dot';
+      dot.title = 'Mensagem nao lida';
+      actions.appendChild(dot);
+    }
     actions.appendChild(msgBtn);
     card.innerHTML = `${av}<div class="friend-info"><div class="friend-name">${f.name}</div><div class="friend-tag">#${f.tag}</div><div class="friend-status"><div class="status-dot ${cls}"></div><span class="status-txt ${cls}">${label}</span></div></div>`;
     card.appendChild(actions);
