@@ -1302,26 +1302,8 @@
   let dragState    = null;
   let dragJustEnded = false;
 
-  // ── Centro do personagem (px) ────────────────────────────────
-  function getCharCenter() {
-    const el = document.getElementById('char-img');
-    const r  = el.getBoundingClientRect();
-    if (r.width > 0) return { cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
-    const h = window.innerHeight;
-    const charH = Math.min(460, Math.max(240, 0.45 * h));
-    return { cx: window.innerWidth / 2, cy: 0.83 * h - charH / 2 };
-  }
-
-  // Converte save antigo (x,y em %) para offset em pixels do char center
-  function legacyToOffset(ph) {
-    if (ph.ox !== undefined) return { ox: ph.ox, oy: ph.oy };
-    const cc = getCharCenter();
-    return { ox: ph.x * window.innerWidth / 100 - cc.cx,
-             oy: ph.y * window.innerHeight / 100 - cc.cy };
-  }
-
   // ── Placed-item factory ──────────────────────────────────────
-  function createPlacedHat(itemId, ox, oy, size, rotation=0, flipped=false) {
+  function createPlacedHat(itemId, x, y, size, rotation=0, flipped=false) {
     const def = ITEMS[itemId];
     const el  = document.createElement('img');
     el.src = def.file; el.alt = def.name;
@@ -1329,7 +1311,7 @@
     el.className = 'placed-hat';
     el.draggable = false;
 
-    const hat = { itemId, ox, oy, size, rotation, flipped, el };
+    const hat = { itemId, x, y, size, rotation, flipped, el };
     applyHatStyle(hat);
     document.body.appendChild(el);
 
@@ -1355,34 +1337,33 @@
     return hat;
   }
 
-  function edgeBrightness(pxX, pxY) {
-    const cx = pxX / window.innerWidth  * 100;
-    const cy = pxY / window.innerHeight * 100;
-    const dx = Math.abs(cx - 50) / 50;
-    const dy = Math.abs(cy - 50) / 50;
-    const dist = Math.sqrt(dx*dx + dy*0.3*dy);
+  function edgeBrightness(hat) {
+    // Centro do item em % do viewport (0–100)
+    const cx = hat.x + hat.size / 2;
+    const cy = hat.y + (hat.el.offsetHeight / window.innerHeight * 100) / 2;
+    const dx = Math.abs(cx - 50) / 50; // 0 = centro, 1 = borda horizontal
+    const dy = Math.abs(cy - 50) / 50; // 0 = centro, 1 = borda vertical
+    const dist = Math.sqrt(dx*dx + dy*0.3*dy); // borda horizontal pesa mais
     return Math.max(0.45, 1 - dist * 0.55);
   }
 
   function applyHatStyle(hat) {
-    const { cx, cy } = getCharCenter();
-    const px = cx + hat.ox, py = cy + hat.oy;
     const z    = ITEMS[hat.itemId]?.cat === 'weapons' ? 15 : 17;
     const flip = hat.flipped ? ' scaleX(-1)' : '';
-    const br   = edgeBrightness(px, py).toFixed(3);
-    hat.el.style.cssText = `left:${px}px;top:${py}px;width:${hat.size}vw;height:auto;transform:rotate(${hat.rotation}deg)${flip};z-index:${z};filter:brightness(${br});`;
+    const br   = edgeBrightness(hat).toFixed(3);
+    hat.el.style.cssText = `left:${hat.x}%;top:${hat.y}%;width:${hat.size}vw;height:auto;transform:rotate(${hat.rotation}deg)${flip};z-index:${z};filter:brightness(${br});`;
   }
 
   // ── Drag ─────────────────────────────────────────────────────
   function beginDrag(hat,mx,my) {
-    dragState = {hat,startMX:mx,startMY:my,startOX:hat.ox,startOY:hat.oy};
+    dragState = {hat,startMX:mx,startMY:my,startX:hat.x,startY:hat.y};
     hat.el.classList.add('dragging');
     document.getElementById('chest-img').classList.add('drag-over');
   }
   function moveDrag(mx,my) {
-    const {hat,startMX,startMY,startOX,startOY} = dragState;
-    hat.ox = startOX + (mx - startMX);
-    hat.oy = startOY + (my - startMY);
+    const {hat,startMX,startMY,startX,startY} = dragState;
+    hat.x = startX + (mx-startMX) / window.innerWidth  * 100;
+    hat.y = startY + (my-startMY) / window.innerHeight * 100;
     applyHatStyle(hat);
   }
   function endDrag() {
@@ -1426,12 +1407,11 @@
   function spawnHat(itemId) {
     if (placedHats.some(h=>h.itemId===itemId)) return;
     const cr = document.getElementById('chest-img').getBoundingClientRect();
-    const size = 13;
+    const size = 13; // vw
     const sizePx = size / 100 * window.innerWidth;
-    const spawnPx = cr.left - sizePx - 16;
-    const spawnPy = cr.top + cr.height / 2 - sizePx / 2;
-    const { cx, cy } = getCharCenter();
-    placedHats.push(createPlacedHat(itemId, spawnPx - cx, spawnPy - cy, size));
+    const x = (cr.left - sizePx - 16) / window.innerWidth  * 100;
+    const y = (cr.top + cr.height/2 - sizePx/2) / window.innerHeight * 100;
+    placedHats.push(createPlacedHat(itemId, x, y, size));
     saveState(); buildInventory(); drawGrip();
   }
   function spawnPending() {
@@ -2315,8 +2295,8 @@
     return {
       earnedItems,
       earnedMobs,
-      placedHats: placedHats.map(h=>({itemId:h.itemId,ox:h.ox,oy:h.oy,size:h.size,rotation:h.rotation||0,flipped:h.flipped||false})),
-      placedMobs: placedMobs.map(m=>({mobId:m.mobId,ox:m.ox,oy:m.oy,size:m.size,rotation:m.rotation||0,flipped:m.flipped||false})),
+      placedHats: placedHats.map(h=>({itemId:h.itemId,x:h.x,y:h.y,size:h.size,rotation:h.rotation||0,flipped:h.flipped||false})),
+      placedMobs: placedMobs.map(m=>({mobId:m.mobId,x:m.x,y:m.y,size:m.size,rotation:m.rotation||0,flipped:m.flipped||false})),
       sessionHistory,
       hatIntervalM,
       silentMode,
@@ -2364,10 +2344,10 @@
     if (!localHasPlaced && fsHasPlaced) {
       // Dispositivo sem estado local — restaura do Firestore (ex: primeiro acesso no browser)
       for (const ph of (data.placedHats||[])) {
-        if (ITEMS[ph.itemId]) { const {ox,oy}=legacyToOffset(ph); placedHats.push(createPlacedHat(ph.itemId,ox,oy,ph.size,ph.rotation||0,ph.flipped||false)); }
+        if (ITEMS[ph.itemId]) placedHats.push(createPlacedHat(ph.itemId,ph.x,ph.y,ph.size,ph.rotation||0,ph.flipped||false));
       }
       for (const pm of (data.placedMobs||[])) {
-        if (MOBS[pm.mobId]) { const {ox,oy}=legacyToOffset(pm); placedMobs.push(createPlacedMob(pm.mobId,ox,oy,pm.size,pm.rotation||0,pm.flipped||false)); }
+        if (MOBS[pm.mobId]) placedMobs.push(createPlacedMob(pm.mobId,pm.x,pm.y,pm.size,pm.rotation||0,pm.flipped||false));
       }
     }
     // Se localStorage já tem itens, mantém o que está na tela sem tocar.
@@ -2376,8 +2356,8 @@
     document.getElementById('focus-toggle')?.classList.toggle('active', silentMode);
 
     // Atualiza cache local com o estado mesclado
-    localStorage.setItem('dt_v7', JSON.stringify({ earnedItems, hatIntervalM, placedHats: placedHats.map(h=>({itemId:h.itemId,ox:h.ox,oy:h.oy,size:h.size,rotation:h.rotation||0,flipped:h.flipped||false})) }));
-    localStorage.setItem('dt_mobs_v1', JSON.stringify({ earnedMobs, placedMobs: placedMobs.map(m=>({mobId:m.mobId,ox:m.ox,oy:m.oy,size:m.size,rotation:m.rotation||0,flipped:m.flipped||false})) }));
+    localStorage.setItem('dt_v7', JSON.stringify({ earnedItems, hatIntervalM, placedHats: placedHats.map(h=>({itemId:h.itemId,x:h.x,y:h.y,size:h.size,rotation:h.rotation||0,flipped:h.flipped||false})) }));
+    localStorage.setItem('dt_mobs_v1', JSON.stringify({ earnedMobs, placedMobs: placedMobs.map(m=>({mobId:m.mobId,x:m.x,y:m.y,size:m.size,rotation:m.rotation||0,flipped:m.flipped||false})) }));
     localStorage.setItem('dt_sessions_v1', JSON.stringify(sessionHistory));
 
     requestAnimationFrame(() => { positionChest(); positionShadows(); drawGrip(); });
@@ -3027,7 +3007,7 @@
   function saveState() {
     localStorage.setItem(SK, JSON.stringify({
       earnedItems, hatIntervalM,
-      placedHats: placedHats.map(h=>({itemId:h.itemId,ox:h.ox,oy:h.oy,size:h.size,rotation:h.rotation||0,flipped:h.flipped||false})),
+      placedHats: placedHats.map(h=>({itemId:h.itemId,x:h.x,y:h.y,size:h.size,rotation:h.rotation||0,flipped:h.flipped||false})),
     }));
     scheduleFirestoreSave();
   }
@@ -3036,7 +3016,7 @@
       const d=JSON.parse(localStorage.getItem(SK)); if(!d) return;
       earnedItems=d.earnedItems||[];
       for (const ph of (d.placedHats||[])) {
-        if (ITEMS[ph.itemId]) { const {ox,oy}=legacyToOffset(ph); placedHats.push(createPlacedHat(ph.itemId,ox,oy,ph.size,ph.rotation||0,ph.flipped||false)); }
+        if (ITEMS[ph.itemId]) placedHats.push(createPlacedHat(ph.itemId,ph.x,ph.y,ph.size,ph.rotation||0,ph.flipped||false));
       }
     } catch(_) {}
   }
@@ -3103,9 +3083,7 @@
   function applyResizeAdjustment() {
     rafResizePending = false;
     positionChest(); layoutLifeBar(); drawGrip();
-    // Reaplica posições — itens usam offset px do char center, seguem o personagem automaticamente
-    placedHats.forEach(h => applyHatStyle(h));
-    placedMobs.forEach(m => applyMobStyle(m));
+    // Itens usam left/top em % — já ficam travados na tela pelo CSS, sem precisar recalcular.
   }
 
   // Use rAF so the handler runs after the browser has fully applied the new
@@ -3206,7 +3184,7 @@
   let earnedMobs = [];
   let mobDragState = null, mobDragJustEnded = false;
 
-  function createPlacedMob(mobId, ox, oy, size, rotation=0, flipped=false) {
+  function createPlacedMob(mobId, x, y, size, rotation=0, flipped=false) {
     const def = MOBS[mobId];
     const el  = document.createElement('img');
     el.src = def.file; el.alt = def.name;
@@ -3215,7 +3193,7 @@
     const shadowEl = document.createElement('div');
     shadowEl.className = 'ground-shadow';
     document.body.appendChild(shadowEl);
-    const mob = { mobId, ox, oy, size, rotation, flipped, el, shadowEl };
+    const mob = { mobId, x, y, size, rotation, flipped, el, shadowEl };
     applyMobStyle(mob);
     document.body.appendChild(el);
     el.addEventListener('load', () => updateMobShadow(mob));
@@ -3239,11 +3217,9 @@
   }
 
   function applyMobStyle(mob) {
-    const { cx, cy } = getCharCenter();
-    const px = cx + mob.ox, py = cy + mob.oy;
     const flip = mob.flipped ? ' scaleX(-1)' : '';
-    const br   = edgeBrightness(px, py).toFixed(3);
-    mob.el.style.cssText = `left:${px}px;top:${py}px;width:${mob.size}vw;height:auto;transform:rotate(${mob.rotation}deg)${flip};z-index:0;filter:brightness(${br});`;
+    const br   = edgeBrightness({x:mob.x, y:mob.y, size:mob.size, el:mob.el}).toFixed(3);
+    mob.el.style.cssText = `left:${mob.x}%;top:${mob.y}%;width:${mob.size}vw;height:auto;transform:rotate(${mob.rotation}deg)${flip};z-index:0;filter:brightness(${br});`;
     requestAnimationFrame(() => updateMobShadow(mob));
   }
 
@@ -3270,14 +3246,14 @@
   }
 
   function beginMobDrag(mob,mx,my) {
-    mobDragState={mob,startMX:mx,startMY:my,startOX:mob.ox,startOY:mob.oy};
+    mobDragState={mob,startMX:mx,startMY:my,startX:mob.x,startY:mob.y};
     mob.el.classList.add('dragging');
     document.getElementById('mob-chest-img').classList.add('drag-over');
   }
   function moveMobDrag(mx,my) {
-    const {mob,startMX,startMY,startOX,startOY}=mobDragState;
-    mob.ox = startOX + (mx - startMX);
-    mob.oy = startOY + (my - startMY);
+    const {mob,startMX,startMY,startX,startY}=mobDragState;
+    mob.x=startX+(mx-startMX)/window.innerWidth*100;
+    mob.y=startY+(my-startMY)/window.innerHeight*100;
     applyMobStyle(mob);
   }
   function endMobDrag() {
@@ -3317,10 +3293,9 @@
     if(placedMobs.some(m=>m.mobId===mobId)) return;
     const cr=document.getElementById('mob-chest-img').getBoundingClientRect();
     const size=13, sizePx=size/100*window.innerWidth;
-    const spawnPx = cr.right + 16;
-    const spawnPy = cr.top + cr.height/2 - sizePx/2;
-    const { cx, cy } = getCharCenter();
-    placedMobs.push(createPlacedMob(mobId, spawnPx - cx, spawnPy - cy, size));
+    const x=(cr.right+16)/window.innerWidth*100;
+    const y=(cr.top+cr.height/2-sizePx/2)/window.innerHeight*100;
+    placedMobs.push(createPlacedMob(mobId,x,y,size));
     saveMobState(); buildMobInventory();
   }
 
@@ -3390,7 +3365,7 @@
   function saveMobState() {
     localStorage.setItem(MOB_SK,JSON.stringify({
       earnedMobs,
-      placedMobs:placedMobs.map(m=>({mobId:m.mobId,ox:m.ox,oy:m.oy,size:m.size,rotation:m.rotation||0,flipped:m.flipped||false}))
+      placedMobs:placedMobs.map(m=>({mobId:m.mobId,x:m.x,y:m.y,size:m.size,rotation:m.rotation||0,flipped:m.flipped||false}))
     }));
     scheduleFirestoreSave();
   }
@@ -3399,7 +3374,7 @@
       const d=JSON.parse(localStorage.getItem(MOB_SK)); if(!d)return;
       earnedMobs = d.earnedMobs||[];
       for(const pm of(d.placedMobs||[])){
-        if(MOBS[pm.mobId]) { const {ox,oy}=legacyToOffset(pm); placedMobs.push(createPlacedMob(pm.mobId,ox,oy,pm.size,pm.rotation||0,pm.flipped||false)); }
+        if(MOBS[pm.mobId]) placedMobs.push(createPlacedMob(pm.mobId,pm.x,pm.y,pm.size,pm.rotation||0,pm.flipped||false));
       }
     } catch(_){}
   }
