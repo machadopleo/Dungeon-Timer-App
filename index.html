@@ -1869,6 +1869,10 @@
   function closeAll() {
     ['hat-notif','inv-modal','mob-modal','catalog-modal','reports-modal','friends-modal','chat-modal','overlay'].forEach(id=>document.getElementById(id).classList.add('hidden'));
     if (chatListener) { chatListener(); chatListener = null; }
+    if (catalogViewingFriend) {
+      catalogViewingFriend = null;
+      document.querySelector('#catalog-header h3').textContent = 'Catalogo';
+    }
   }
 
   // Fecha só a notificação de item e abre o relatório pendente, se houver
@@ -2664,6 +2668,12 @@
     msgBtn.textContent = '💬';
     msgBtn.style.cssText = 'font-size:1.2rem;padding:4px 8px;';
     msgBtn.onclick = () => openChat(f);
+    const catBtn = document.createElement('button');
+    catBtn.className = 'friend-btn';
+    catBtn.textContent = '📖';
+    catBtn.title = `Ver catalogo de ${f.name}`;
+    catBtn.style.cssText = 'font-size:1.2rem;padding:4px 8px;';
+    catBtn.onclick = () => openFriendCatalog(f);
     const actions = document.createElement('div');
     actions.className = 'friend-actions';
     if (_unreadFromUids.has(f.uid)) {
@@ -2672,6 +2682,7 @@
       dot.title = 'Mensagem nao lida';
       actions.appendChild(dot);
     }
+    actions.appendChild(catBtn);
     actions.appendChild(msgBtn);
     card.innerHTML = `${av}<div class="friend-info"><div class="friend-name">${f.name}</div><div class="friend-tag">#${f.tag}</div><div class="friend-status"><div class="status-dot ${cls}"></div><span class="status-txt ${cls}">${label}</span></div></div>`;
     card.appendChild(actions);
@@ -2855,8 +2866,31 @@
     { id:'mobs',    label:'Mobs'    },
   ];
   let activeCatTab = 'hats';
+  let catalogViewingFriend = null; // { name, tag, earnedItems, earnedMobs }
 
-  function openCatalog() { buildCatalogTabs(); buildCatalogGrid(); show('catalog-modal'); show('overlay'); }
+  function openCatalog() {
+    catalogViewingFriend = null;
+    document.querySelector('#catalog-header h3').textContent = 'Catalogo';
+    activeCatTab = 'hats';
+    buildCatalogTabs(); buildCatalogGrid(); show('catalog-modal'); show('overlay');
+  }
+
+  async function openFriendCatalog(f) {
+    let snap;
+    try { snap = await db.collection('users').doc(f.uid).get({ source: 'server' }); }
+    catch(_) { try { snap = await db.collection('users').doc(f.uid).get(); } catch(e) { return; } }
+    if (!snap || !snap.exists) return;
+    const data = snap.data();
+    catalogViewingFriend = {
+      name: f.name, tag: f.tag,
+      earnedItems: data.earnedItems || [],
+      earnedMobs:  data.earnedMobs  || [],
+    };
+    document.querySelector('#catalog-header h3').textContent = `Catalogo de ${f.name}`;
+    document.getElementById('friends-modal').classList.add('hidden');
+    activeCatTab = 'hats';
+    buildCatalogTabs(); buildCatalogGrid(); show('catalog-modal'); show('overlay');
+  }
 
   function buildCatalogTabs() {
     const c = document.getElementById('catalog-tabs'); c.innerHTML = '';
@@ -2890,8 +2924,10 @@
     entries.sort((a,b) => RORDER[a.rarity] - RORDER[b.rarity]);
     const rates = computeDropRates();
 
+    const viewItems = catalogViewingFriend ? catalogViewingFriend.earnedItems : earnedItems;
+    const viewMobs  = catalogViewingFriend ? catalogViewingFriend.earnedMobs  : earnedMobs;
     entries.forEach(entry => {
-      const discovered = isMob ? earnedMobs.includes(entry.id) : earnedItems.includes(entry.id);
+      const discovered = isMob ? viewMobs.includes(entry.id) : viewItems.includes(entry.id);
       const rarity = isMob ? MOB_RARITIES[entry.rarity] : RARITIES[entry.rarity];
       const rate   = rates[entry.id];
       const rateTxt = rate < 0.1 ? rate.toFixed(2) : rate < 1 ? rate.toFixed(1) : rate.toFixed(1);
