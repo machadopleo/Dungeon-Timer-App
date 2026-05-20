@@ -48,28 +48,28 @@
     #session-panel {
       display:none; flex-direction:column; gap:0;
       background:rgba(8,3,0,0.85); border:1px solid #3A2808;
-      border-radius:8px; overflow:hidden;
+      border-radius:10px; overflow:hidden;
       width:100%;
     }
     #session-panel-title {
-      color:#7A5A20; font-size:0.9rem; text-align:center;
-      padding:5px 8px 4px; border-bottom:1px solid #2A1804; flex-shrink:0;
+      color:#907838; font-size:1.1rem; text-align:center;
+      padding:7px 10px 6px; border-bottom:1px solid #2A1804; flex-shrink:0;
     }
     #session-panel-list {
       display:flex; flex-direction:column; gap:0;
-      max-height:180px; overflow-y:auto;
+      max-height:260px; overflow-y:auto;
       scrollbar-width:thin; scrollbar-color:#3A2808 transparent;
     }
     .sp-item {
-      display:flex; align-items:center; gap:7px;
-      padding:5px 8px; border-bottom:1px solid rgba(42,24,4,0.5);
+      display:flex; align-items:center; gap:10px;
+      padding:7px 10px; border-bottom:1px solid rgba(42,24,4,0.5);
     }
     .sp-item:last-child { border-bottom:none; }
-    .sp-item img { width:30px; height:30px; object-fit:contain; image-rendering:crisp-edges; flex-shrink:0; }
-    .sp-item .sp-name  { color:#DFC880; font-size:0.95rem; line-height:1.2; }
-    .sp-item .sp-new   { color:#80D860; font-size:0.8rem; }
-    .sp-item .sp-rep   { color:#4A3818; font-size:0.8rem; }
-    .sp-item .sp-count { color:#C8960E; font-size:1rem; font-weight:bold; flex-shrink:0; }
+    .sp-item img { width:44px; height:44px; object-fit:contain; image-rendering:crisp-edges; flex-shrink:0; }
+    .sp-item .sp-name  { color:#DFC880; font-size:1.1rem; line-height:1.3; }
+    .sp-item .sp-new   { color:#80D860; font-size:0.95rem; }
+    .sp-item .sp-rep   { color:#4A3818; font-size:0.95rem; }
+    .sp-item .sp-count { color:#C8960E; font-size:1.2rem; font-weight:bold; flex-shrink:0; }
 
     /* ── Recovery lost items grid ── */
     #recovery-lost-items {
@@ -1736,7 +1736,7 @@
 
     seen.forEach(it => {
       const def = ITEMS[it.id] || MOBS[it.id]; if (!def) return;
-      const isNew = !(preSessionItems||[]).includes(it.id) && !(preSessionMobs||[]).includes(it.id);
+      const isNew = it.isNew ?? (!(preSessionItems||[]).includes(it.id) && !(preSessionMobs||[]).includes(it.id));
       const rar   = RARITIES[def.rarity] || MOB_RARITIES[def.rarity];
       const count = counts[it.id];
 
@@ -1797,7 +1797,7 @@
   function awardMob(id) {
     const isNew = !earnedMobs.includes(id);
     if (isNew) { earnedMobs.push(id); saveMobState(); }
-    if (currentSession) { currentSession.itemsEarned.push({ id, name: MOBS[id].name, rarity: MOBS[id].rarity }); saveSessionRecovery(); updateSessionPanel(); }
+    if (currentSession) { currentSession.itemsEarned.push({ id, name: MOBS[id].name, rarity: MOBS[id].rarity, isNew }); saveSessionRecovery(); updateSessionPanel(); }
     if (silentMode) { showDropToast(MOBS[id].file, MOBS[id].name, MOBS[id].rarity, isNew); return; }
     pending = id; pendingType = 'mob';
     const rar = MOB_RARITIES[MOBS[id].rarity];
@@ -1818,7 +1818,7 @@
   function awardItem(id) {
     const isNew = !earnedItems.includes(id);
     if (isNew) { earnedItems.push(id); saveState(); }
-    if (currentSession) { currentSession.itemsEarned.push({ id, name: ITEMS[id].name, rarity: ITEMS[id].rarity }); saveSessionRecovery(); updateSessionPanel(); }
+    if (currentSession) { currentSession.itemsEarned.push({ id, name: ITEMS[id].name, rarity: ITEMS[id].rarity, isNew }); saveSessionRecovery(); updateSessionPanel(); }
     if (silentMode) { showDropToast(ITEMS[id].file, ITEMS[id].name, ITEMS[id].rarity, isNew); return; }
     pending=id; pendingType='item';
     const rar = RARITIES[ITEMS[id].rarity];
@@ -2086,7 +2086,8 @@
         `Sessao de <strong>${typeLabel}</strong> — <strong>${timeStr}</strong> restantes` +
         (itemCount > 0 ? `<br>${itemCount} item(s) conquistado(s)` : '');
       const newItems = (state.itemsEarned || [])
-        .filter(it => !(state.preSessionItems || []).includes(it.id) && !(state.preSessionMobs || []).includes(it.id));
+        .filter(it => it.isNew ?? (!(state.preSessionItems||[]).includes(it.id) && !(state.preSessionMobs||[]).includes(it.id)))
+        .filter((it,i,a) => a.findIndex(x=>x.id===it.id)===i); // deduplica
       const lostGrid = document.getElementById('recovery-lost-items');
       lostGrid.innerHTML = '';
       if (newItems.length > 0) {
@@ -2135,8 +2136,9 @@
     if (_pendingRecovery) {
       const s = _pendingRecovery;
       // Remove items earned as NEW during the interrupted session
-      const newItems = (s.itemsEarned || []).filter(it => !(s.preSessionItems||[]).includes(it.id)).map(it=>it.id);
-      const newMobs  = (s.itemsEarned || []).filter(it => !(s.preSessionMobs ||[]).includes(it.id)).map(it=>it.id);
+      const allNew   = (s.itemsEarned || []).filter(it => it.isNew ?? (!(s.preSessionItems||[]).includes(it.id) && !(s.preSessionMobs||[]).includes(it.id)));
+      const newItems = [...new Set(allNew.filter(it => ITEMS[it.id]).map(it => it.id))];
+      const newMobs  = [...new Set(allNew.filter(it => MOBS[it.id] ).map(it => it.id))];
       if (newItems.length || newMobs.length) {
         earnedItems = earnedItems.filter(id => !newItems.includes(id));
         earnedMobs  = earnedMobs.filter(id  => !newMobs.includes(id));
@@ -2190,7 +2192,6 @@
   function endSession(completed) {
     if (!currentSession) return;
     clearSessionRecovery();
-    updateSessionPanel();
     const now = new Date();
     currentSession.endTime   = now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
     currentSession.completed = completed;
@@ -2199,6 +2200,7 @@
     saveSessions();
     const sess = currentSession;
     currentSession = null;
+    updateSessionPanel();
     if (completed) showSessionSummary(sess);
   }
 
