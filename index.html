@@ -30,17 +30,17 @@
     #catalog-modal, #friends-modal, #chat-modal,
     #auth-login-tooltip, #auth-dropdown {
       background-image:
-        linear-gradient(rgba(3,1,0,0.80), rgba(3,1,0,0.80)),
+        linear-gradient(rgba(3,1,0,0.42), rgba(3,1,0,0.42)),
         url('Imagens/Texture UI.png');
       background-size: auto, 220px 220px;
       background-repeat: no-repeat, repeat;
-      border: 2px solid #8A6820 !important;
+      border: 2px solid #3A3A3A !important;
       border-radius: 4px !important;
       box-shadow:
-        0 0 0 1px #1E0E00,
-        inset 0 0 0 1px #4A2C08,
-        inset 3px 3px 0 rgba(200,155,50,0.12),
-        inset -2px -2px 0 rgba(0,0,0,0.45),
+        0 0 0 1px #111,
+        inset 0 0 0 1px #2A2A2A,
+        inset 3px 3px 0 rgba(255,255,255,0.04),
+        inset -2px -2px 0 rgba(0,0,0,0.35),
         0 20px 60px rgba(0,0,0,0.97) !important;
     }
     /* Títulos dos painéis com sombra forte para legibilidade */
@@ -52,10 +52,10 @@
     /* Chart areas com fundo próprio levemente texturizado */
     .rep-chart-wrap {
       background-image:
-        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+        linear-gradient(rgba(0,0,0,0.28), rgba(0,0,0,0.28)),
         url('Imagens/Texture UI.png');
       background-size: auto, 120px 120px;
-      border: 1px solid #3A2408 !important;
+      border: 1px solid #2A2A2A !important;
       border-radius: 4px !important;
     }
 
@@ -268,13 +268,13 @@
     #item-tooltip {
       position: fixed; z-index: 50; pointer-events: none;
       background-image:
-        linear-gradient(rgba(3,1,0,0.88), rgba(3,1,0,0.88)),
+        linear-gradient(rgba(3,1,0,0.42), rgba(3,1,0,0.42)),
         url('Imagens/Texture UI.png');
       background-size: auto, 120px 120px;
-      border: 2px solid #8A6820;
+      border: 2px solid #3A3A3A;
       border-radius: 4px; padding: 10px 12px;
       display: none; flex-direction: column; align-items: center; gap: 6px;
-      box-shadow: 0 0 0 1px #1E0E00, inset 0 0 0 1px #4A2C08, 0 8px 28px rgba(0,0,0,0.97);
+      box-shadow: 0 0 0 1px #111, inset 0 0 0 1px #2A2A2A, 0 8px 28px rgba(0,0,0,0.97);
     }
     #item-tooltip img {
       width: 88px; height: 88px; object-fit: contain;
@@ -1050,6 +1050,7 @@
 <body>
 
   <audio id="bg-music" src="Musica/Musica.mp3" loop></audio>
+  <audio id="msg-sound" src="Mensagem/sound message.mp3" preload="auto"></audio>
 
   <div id="top-right-btns">
     <!-- Botão de amigos (só visível quando logado) -->
@@ -2893,6 +2894,8 @@
 
   function doSignOut() {
     clearSessionRecovery();
+    silentMode = false;
+    document.getElementById('focus-toggle')?.classList.remove('active');
     if (currentUser) {
       db.collection('users').doc(currentUser.uid)
         .update({ isOnline: false, inFocus: false }).catch(() => {});
@@ -3013,15 +3016,21 @@
     _chatBadgeUnsub = db.collection('chats')
       .where('members', 'array-contains', currentUser.uid)
       .onSnapshot(snap => {
+        const prevUnread = _unreadFromUids;
         _unreadFromUids = new Set();
         snap.docs.forEach(d => {
           const data = d.data();
           if ((data.unreadFor||[]).includes(currentUser.uid)) {
-            // O outro membro do chat é quem mandou a mensagem não lida
             const other = (data.members||[]).find(u => u !== currentUser.uid);
             if (other) _unreadFromUids.add(other);
           }
         });
+        // Toca som se chegou mensagem nova e modo foco desligado
+        const hasNewMsg = [..._unreadFromUids].some(uid => !prevUnread.has(uid));
+        if (hasNewMsg && !silentMode) {
+          const snd = document.getElementById('msg-sound');
+          if (snd) { snd.currentTime = 0; snd.play().catch(()=>{}); }
+        }
         updateFriendsBadge();
         // Rebuildamos a lista se o modal estiver aberto
         if (!document.getElementById('friends-modal').classList.contains('hidden')) buildFriendsModal();
