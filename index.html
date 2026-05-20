@@ -1439,6 +1439,7 @@
     buildTabs();
     updateSessionPanel();
     if (!document.getElementById('inv-modal').classList.contains('hidden'))     { buildTabs(); buildInventory(); }
+    if (!document.getElementById('catalog-modal').classList.contains('hidden')) { buildCatalogTabs(); buildCatalogGrid(); }
     if (!document.getElementById('mob-modal').classList.contains('hidden'))     buildMobInventory();
     if (!document.getElementById('friends-modal').classList.contains('hidden')) buildFriendsList?.();
     if (!document.getElementById('reports-modal').classList.contains('hidden')) { buildGeneralStats(); buildSessionsList(); }
@@ -3284,10 +3285,10 @@
 
   // ── Catalog ──────────────────────────────────────────────────
   const CAT_TABS = [
-    { id:'hats',    label:'Chapeus' },
-    { id:'weapons', label:'Armas'   },
-    { id:'shields', label:'Escudos' },
-    { id:'mobs',    label:'Mobs'    },
+    { id:'hats',    i18n:'hats'    },
+    { id:'weapons', i18n:'weapons' },
+    { id:'shields', i18n:'shields' },
+    { id:'mobs',    i18n:'monsters'},
   ];
   let activeCatTab = 'hats';
   let catalogViewingFriend = null; // { name, tag, earnedItems, earnedMobs }
@@ -3318,11 +3319,11 @@
 
   function buildCatalogTabs() {
     const c = document.getElementById('catalog-tabs'); c.innerHTML = '';
-    CAT_TABS.forEach(t => {
+    CAT_TABS.forEach(tab => {
       const btn = document.createElement('button');
-      btn.className = 'cat-tab' + (t.id === activeCatTab ? ' active' : '');
-      btn.textContent = t.label;
-      btn.onclick = () => { activeCatTab = t.id; buildCatalogTabs(); buildCatalogGrid(); };
+      btn.className = 'cat-tab' + (tab.id === activeCatTab ? ' active' : '');
+      btn.textContent = t(tab.i18n);
+      btn.onclick = () => { activeCatTab = tab.id; buildCatalogTabs(); buildCatalogGrid(); };
       c.appendChild(btn);
     });
   }
