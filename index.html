@@ -1389,7 +1389,7 @@
       catalogOf:'Catalog of', adventurer:'Adventurer', noData:'No data',
       discardLosesItems:'Discard will remove', newItemsFromSession:'new item(s) from this session:',
       noNewItemsLost:'No new items will be lost on discard.',
-      requests:'Requests', accept:'Accept', decline:'Decline',
+      focusLabel:'Focus', requests:'Requests', accept:'Accept', decline:'Decline',
       viewCatalog:'View catalog of',
       langToggle:'🇧🇷 Português',
     },
@@ -1437,7 +1437,7 @@
       catalogOf:'Catalogo de', adventurer:'Aventureiro', noData:'Sem dados',
       discardLosesItems:'Descartar apagara', newItemsFromSession:'item(s) novo(s) desta sessao:',
       noNewItemsLost:'Nenhum item novo sera perdido ao descartar.',
-      requests:'Solicitacoes', accept:'Aceitar', decline:'Recusar',
+      focusLabel:'Foco', requests:'Solicitacoes', accept:'Aceitar', decline:'Recusar',
       viewCatalog:'Ver catalogo de',
       langToggle:'🇺🇸 English',
     },
@@ -2628,7 +2628,7 @@
     uncommon: { text:'#6EA0FF', bg:'rgba(60,90,200,0.2)',  border:'#4060C0' },
     rare:     { text:'#FFD020', bg:'rgba(180,120,0,0.25)', border:'#C08000' },
   };
-  const RARITY_LABELS = { common:'Comum', uncommon:'Incomum', rare:'Raro' };
+  const RARITY_LABELS = { common:'Comum', uncommon:'Incomum', rare:'Raro', legendary:'Lendario' };
 
   function showItemTooltip(e, it) {
     const def = ITEMS[it.id] || MOBS[it.id];
@@ -2638,9 +2638,9 @@
     const ttNm  = document.getElementById('tt-name');
     const ttRar = document.getElementById('tt-rarity');
     ttImg.src = def.file;
-    ttNm.textContent  = def.name;
+    ttNm.textContent  = iName(def);
     const rc = RARITY_COLORS[it.rarity] || RARITY_COLORS.common;
-    ttRar.textContent  = RARITY_LABELS[it.rarity] || it.rarity;
+    ttRar.textContent  = rLabel(it.rarity);
     ttRar.style.color  = rc.text;
     ttRar.style.background = rc.bg;
     ttRar.style.border = '1px solid ' + rc.border;
@@ -2681,14 +2681,15 @@
 
       const statsDiv = document.createElement('div'); statsDiv.className='report-stats';
       const dur = document.createElement('div'); dur.className='report-stat';
-      dur.innerHTML = `<span>Foco:</span> ${fmtDuration(sess.duration||0)}`;
+      dur.innerHTML = `<span>${t('focusLabel')}:</span> ${fmtDuration(sess.duration||0)}`;
       statsDiv.appendChild(dur); card.appendChild(statsDiv);
 
       const itemsDiv = document.createElement('div'); itemsDiv.className='report-items';
       if ((sess.itemsEarned||[]).length) {
         sess.itemsEarned.forEach(it => {
           const badge = document.createElement('span'); badge.className='report-item-badge';
-          badge.textContent = it.name;
+          const defItem = ITEMS[it.id] || MOBS[it.id];
+          badge.textContent = defItem ? iName(defItem) : it.name;
           badge.addEventListener('mouseenter', e => showItemTooltip(e, it));
           badge.addEventListener('mousemove',  e => positionTooltip(e, document.getElementById('item-tooltip')));
           badge.addEventListener('mouseleave', hideItemTooltip);
