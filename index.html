@@ -1039,11 +1039,11 @@
     <!-- Botão de conta -->
     <div id="auth-wrap">
       <div id="auth-login-wrap">
-        <button id="auth-login-btn" onclick="signInWithGoogle()">Entrar</button>
+        <button id="auth-login-btn" onclick="signInWithGoogle()" data-i18n="signIn">Sign In</button>
         <div id="auth-login-tooltip">
-          <strong>Faca login para desbloquear:</strong>
-          · Relatorio de foco<br>
-          · Catalogo de drops
+          <strong data-i18n="loginToUnlock">Sign in to unlock:</strong><br>
+          · <span data-i18n="focusReportFeature">Focus report</span><br>
+          · <span data-i18n="dropCatalogFeature">Drop catalog</span>
         </div>
       </div>
       <button id="auth-user-btn" onclick="toggleAuthDropdown()">
@@ -1052,10 +1052,12 @@
         <span style="color:#7A5A10;font-size:0.85em">▾</span>
       </button>
       <div id="auth-dropdown">
-        <button onclick="openReports(); toggleAuthDropdown()">Relatorios de Foco</button>
-        <button onclick="openCatalog(); toggleAuthDropdown()">Catalogo de Drops</button>
+        <button onclick="openReports(); toggleAuthDropdown()" data-i18n="focusReports">Focus Reports</button>
+        <button onclick="openCatalog(); toggleAuthDropdown()" data-i18n="dropCatalog">Drop Catalog</button>
         <div class="auth-sep"></div>
-        <button onclick="doSignOut()">Sair da conta</button>
+        <button id="lang-toggle-btn" onclick="setLang(currentLang==='en'?'pt':'en'); toggleAuthDropdown()">🇧🇷 Português</button>
+        <div class="auth-sep"></div>
+        <button onclick="doSignOut()" data-i18n="signOut">Sign out</button>
       </div>
     </div>
   </div>
@@ -1064,35 +1066,35 @@
 
   <!-- Recovery modal -->
   <div id="recovery-modal" class="hidden">
-    <h3>⚔ Sessao Interrompida</h3>
+    <h3 data-i18n="sessionInterrupted">⚔ Interrupted Session</h3>
     <div class="recovery-info" id="recovery-info"></div>
     <div class="recovery-warn" id="recovery-warn"></div>
     <div id="recovery-lost-items"></div>
     <div id="recovery-btns">
-      <button class="recovery-btn-yes" onclick="recoverSession()">Continuar</button>
-      <button class="recovery-btn-no"  onclick="discardSession()">Descartar</button>
+      <button class="recovery-btn-yes" onclick="recoverSession()" data-i18n="continueSession">Continue</button>
+      <button class="recovery-btn-no"  onclick="discardSession()" data-i18n="discardSession">Discard</button>
     </div>
   </div>
 
   <!-- Session type modal -->
   <div id="session-type-modal" class="hidden">
-    <h3>Sessao de Foco</h3>
-    <p>Qual o tipo de sessao?</p>
+    <h3 data-i18n="focusSession">Focus Session</h3>
+    <p data-i18n="sessionTypeQuestion">What type of session?</p>
     <div id="session-type-btns">
-      <button class="session-type-btn" onclick="startSession('leitura')">Leitura</button>
-      <button class="session-type-btn" onclick="startSession('trabalho')">Trabalho</button>
-      <button class="session-type-btn" onclick="startSession('estudos')">Estudos</button>
-      <button class="session-type-btn" onclick="startSession('outros')">Outros</button>
+      <button class="session-type-btn" onclick="startSession('leitura')" data-i18n="reading">Reading</button>
+      <button class="session-type-btn" onclick="startSession('trabalho')" data-i18n="work">Work</button>
+      <button class="session-type-btn" onclick="startSession('estudos')" data-i18n="study">Study</button>
+      <button class="session-type-btn" onclick="startSession('outros')" data-i18n="other">Other</button>
     </div>
   </div>
 
   <!-- Reports modal -->
   <div id="reports-modal" class="hidden">
     <div id="reports-header">
-      <h3>Relatorios</h3>
+      <h3 data-i18n="reports">Reports</h3>
       <div id="rep-main-tabs">
-        <button class="rep-main-tab active" data-tab="geral"   onclick="switchRepTab('geral')">Geral</button>
-        <button class="rep-main-tab"        data-tab="sessoes" onclick="switchRepTab('sessoes')">Sessoes</button>
+        <button class="rep-main-tab active" data-tab="geral"   onclick="switchRepTab('geral')"   data-i18n="general">General</button>
+        <button class="rep-main-tab"        data-tab="sessoes" onclick="switchRepTab('sessoes')" data-i18n="sessions">Sessions</button>
       </div>
       <button id="reports-close-btn" onclick="closeAll()">✕</button>
     </div>
@@ -1101,35 +1103,35 @@
     <div id="rep-geral">
       <div id="rep-filters">
         <div class="rep-filter-group">
-          <span class="rep-filter-group-label">Periodo:</span>
-          <button class="rep-filter active" data-period="all"   onclick="setRepPeriod('all')">Tudo</button>
-          <button class="rep-filter"        data-period="week"  onclick="setRepPeriod('week')">Semana</button>
-          <button class="rep-filter"        data-period="month" onclick="setRepPeriod('month')">Mes</button>
-          <button class="rep-filter"        data-period="year"  onclick="setRepPeriod('year')">Ano</button>
+          <span class="rep-filter-group-label" data-i18n="period">Period:</span>
+          <button class="rep-filter active" data-period="all"   onclick="setRepPeriod('all')"   data-i18n="all">All</button>
+          <button class="rep-filter"        data-period="week"  onclick="setRepPeriod('week')"  data-i18n="week">Week</button>
+          <button class="rep-filter"        data-period="month" onclick="setRepPeriod('month')" data-i18n="month">Month</button>
+          <button class="rep-filter"        data-period="year"  onclick="setRepPeriod('year')"  data-i18n="year">Year</button>
         </div>
         <div class="rep-filter-group">
-          <span class="rep-filter-group-label">Tipo:</span>
-          <button class="rep-filter active" data-type="all"      onclick="setRepType('all')">Todos</button>
-          <button class="rep-filter"        data-type="leitura"  onclick="setRepType('leitura')">Leitura</button>
-          <button class="rep-filter"        data-type="trabalho" onclick="setRepType('trabalho')">Trabalho</button>
-          <button class="rep-filter"        data-type="estudos"  onclick="setRepType('estudos')">Estudos</button>
-          <button class="rep-filter"        data-type="outros"   onclick="setRepType('outros')">Outros</button>
+          <span class="rep-filter-group-label" data-i18n="type">Type:</span>
+          <button class="rep-filter active" data-type="all"      onclick="setRepType('all')"      data-i18n="allTypes">All</button>
+          <button class="rep-filter"        data-type="leitura"  onclick="setRepType('leitura')"  data-i18n="reading">Reading</button>
+          <button class="rep-filter"        data-type="trabalho" onclick="setRepType('trabalho')" data-i18n="work">Work</button>
+          <button class="rep-filter"        data-type="estudos"  onclick="setRepType('estudos')"  data-i18n="study">Study</button>
+          <button class="rep-filter"        data-type="outros"   onclick="setRepType('outros')"   data-i18n="other">Other</button>
         </div>
       </div>
       <div id="rep-stat-cards"></div>
       <div id="rep-charts">
         <div class="rep-chart-wrap">
-          <div class="rep-chart-title">Distribuicao por tipo</div>
+          <div class="rep-chart-title" data-i18n="distributionByType">Distribution by type</div>
           <canvas id="donut-canvas" width="180" height="180"></canvas>
           <div class="rep-chart-legend">
-            <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#5B9BD5"></div>Leitura</div>
-            <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#C8960E"></div>Trabalho</div>
-            <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#6AAA6A"></div>Estudos</div>
-            <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#9B7BD5"></div>Outros</div>
+            <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#5B9BD5"></div><span data-i18n="reading">Reading</span></div>
+            <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#C8960E"></div><span data-i18n="work">Work</span></div>
+            <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#6AAA6A"></div><span data-i18n="study">Study</span></div>
+            <div class="rep-legend-item"><div class="rep-legend-dot" style="background:#9B7BD5"></div><span data-i18n="other">Other</span></div>
           </div>
         </div>
         <div class="rep-chart-wrap" style="display:flex;flex-direction:column;">
-          <div class="rep-chart-title" id="bar-chart-title">Horas por Mes</div>
+          <div class="rep-chart-title" id="bar-chart-title">Hours per Month</div>
           <canvas id="bar-canvas" width="440" height="170" style="width:100%;height:170px;"></canvas>
         </div>
       </div>
@@ -1143,19 +1145,19 @@
 
   <div id="right-controls">
     <div id="session-panel">
-      <div id="session-panel-title">Itens desta sessao</div>
+      <div id="session-panel-title" data-i18n="sessionItems">Session items</div>
       <div id="session-panel-list"></div>
     </div>
     <div id="focus-mode-wrap">
       <div id="focus-mode-row" onclick="toggleSilentMode()">
-        <span id="focus-mode-label">Modo Foco</span>
+        <span id="focus-mode-label" data-i18n="focusMode">Focus Mode</span>
         <div id="focus-toggle"></div>
-        <div id="focus-mode-desc">Drops aparecem discretamente</div>
+        <div id="focus-mode-desc" data-i18n="focusModeDesc">Drops appear discreetly</div>
       </div>
     </div>
     <div id="vol-wrap">
       <div id="vol-label-row">
-        <span class="vol-label">Volume</span>
+        <span class="vol-label" data-i18n="volume">Volume</span>
         <span id="vol-pct">50%</span>
       </div>
       <canvas id="vol-canvas" width="100" height="16"></canvas>
@@ -1183,14 +1185,14 @@
           <button class="btn" onclick="addTime(30)">+30</button>
         </div>
         <span id="timer-display">00:00</span>
-        <button class="btn btn-start" id="start-btn" onclick="toggleTimer()">▶ Iniciar</button>
+        <button class="btn btn-start" id="start-btn" onclick="toggleTimer()">▶ Start</button>
         <button class="btn" onclick="resetTimer()">⟳</button>
       </div>
     </div>
     <!-- "?" outside the clip, anchored to timer-ui -->
     <div id="timer-qmark-wrap">
       <div id="timer-qmark">?</div>
-      <div id="timer-tooltip">A cada 5 minutos, um item aleatorio e dropado com diferentes niveis de raridade. Quanto mais tempo voce explorar, mais itens raros podem aparecer!</div>
+      <div id="timer-tooltip" data-i18n="timerTooltip">Every 5 minutes, a random item is dropped with different rarity levels. The longer you explore, the rarer items may appear!</div>
     </div>
   </div>
 
@@ -1204,31 +1206,31 @@
 
   <!-- Hat notification -->
   <div id="hat-notif" class="modal hidden">
-    <h3>Item Conquistado!</h3>
+    <h3 id="notif-title" data-i18n="itemAcquired">Item Acquired!</h3>
     <img id="notif-img" src="" alt="">
     <p id="notif-name"></p>
     <div class="notif-btns">
-      <button class="btn btn-start" onclick="spawnPending()">Colocar na tela</button>
-      <button class="btn" onclick="closeNotif()">Depois</button>
+      <button class="btn btn-start" onclick="spawnPending()" data-i18n="placeOnScreen">Place on screen</button>
+      <button class="btn" onclick="closeNotif()" data-i18n="later">Later</button>
     </div>
   </div>
 
   <!-- Inventory modal -->
   <div id="inv-modal" class="hidden">
     <div id="inv-header">
-      <h3>Inventario</h3>
+      <h3 data-i18n="inventory">Inventory</h3>
       <div id="inv-tabs"></div>
       <button id="inv-close-btn" onclick="closeAll()">✕</button>
     </div>
     <div id="inv-scroll"></div>
     <div class="modal-footer">
-      <button id="inv-collect-btn" class="btn" onclick="collectAllHats()" style="font-size:1.3rem;padding:8px 24px;display:none;">Recolher itens da tela</button>
+      <button id="inv-collect-btn" class="btn" onclick="collectAllHats()" style="font-size:1.3rem;padding:8px 24px;display:none;" data-i18n="collectItems">Collect items from screen</button>
     </div>
   </div>
 
   <div id="catalog-modal" class="hidden">
     <div id="catalog-header">
-      <h3>Catalogo</h3>
+      <h3 id="catalog-title" data-i18n="catalog">Catalog</h3>
       <button id="catalog-close-btn" onclick="closeAll()">✕</button>
     </div>
     <div id="catalog-tabs"></div>
@@ -1237,28 +1239,28 @@
 
   <div id="mob-modal" class="hidden">
     <div id="mob-header">
-      <h3>Monstros</h3>
+      <h3 data-i18n="monsters">Monsters</h3>
       <button id="mob-close-btn" onclick="closeAll()">✕</button>
     </div>
     <div id="mob-scroll"></div>
     <div class="modal-footer" style="padding:10px 6px 0;">
-      <button id="mob-collect-btn" class="btn" onclick="collectAllMobs()" style="font-size:1.3rem;padding:8px 24px;display:none;">Recolher monstros da tela</button>
+      <button id="mob-collect-btn" class="btn" onclick="collectAllMobs()" style="font-size:1.3rem;padding:8px 24px;display:none;" data-i18n="collectMonsters">Collect monsters from screen</button>
     </div>
   </div>
 
   <div id="friends-modal" class="hidden">
     <div id="friends-header">
-      <h3>Amigos</h3>
+      <h3 data-i18n="friends">Friends</h3>
       <button id="friends-close-btn" onclick="closeAll()">✕</button>
     </div>
     <div id="my-tag-row">
-      <span id="my-tag-label">Seu tag</span>
+      <span id="my-tag-label" data-i18n="yourTag">Your tag</span>
       <span id="my-tag-value">#????</span>
-      <button id="copy-tag-btn" onclick="copyMyTag()">Copiar</button>
+      <button id="copy-tag-btn" onclick="copyMyTag()" data-i18n="copy">Copy</button>
     </div>
     <div id="add-friend-row">
       <input id="add-friend-input" type="text" placeholder="#0000" maxlength="5" onkeydown="if(event.key==='Enter')addFriendByTag()">
-      <button id="add-friend-btn" onclick="addFriendByTag()">Adicionar</button>
+      <button id="add-friend-btn" onclick="addFriendByTag()" data-i18n="add">Add</button>
     </div>
     <div id="friends-msg" style="display:none"></div>
     <div id="friends-scroll"></div>
@@ -1277,7 +1279,7 @@
     </div>
     <div id="chat-messages"></div>
     <div id="chat-input-row">
-      <textarea id="chat-input" rows="1" placeholder="Mensagem..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+      <textarea id="chat-input" rows="1" data-i18n-placeholder="messagePlaceholder" placeholder="Message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
       <button id="chat-send-btn" onclick="sendChatMessage()">→</button>
     </div>
   </div>
@@ -1312,7 +1314,143 @@
   db.enablePersistence({ synchronizeTabs: false }).catch(() => {});
   let currentUser = null;
 
+  // ── Internationalisation ─────────────────────────────────────
+  const STRINGS = {
+    en: {
+      signIn:'Sign In', signOut:'Sign out',
+      loginToUnlock:'Sign in to unlock:', focusReportFeature:'Focus report', dropCatalogFeature:'Drop catalog',
+      focusReports:'Focus Reports', dropCatalog:'Drop Catalog',
+      focusSession:'Focus Session', sessionTypeQuestion:'What type of session?',
+      reading:'Reading', work:'Work', study:'Study', other:'Other',
+      sessionInterrupted:'⚔ Interrupted Session', continueSession:'Continue', discardSession:'Discard',
+      reports:'Reports', general:'General', sessions:'Sessions',
+      period:'Period:', type:'Type:', all:'All', week:'Week', month:'Month', year:'Year', allTypes:'All',
+      distributionByType:'Distribution by type',
+      sessionItems:'Session items',
+      focusMode:'Focus Mode', focusModeDesc:'Drops appear discreetly',
+      volume:'Volume',
+      itemAcquired:'Item Acquired!', newItem:'New Item!', repeatedItem:'Repeated Item',
+      newMob:'New Monster!', repeatedMob:'Repeated Monster',
+      placeOnScreen:'Place on screen', later:'Later',
+      inventory:'Inventory', collectItems:'Collect items from screen', collectMonsters:'Collect monsters from screen',
+      catalog:'Catalog', monsters:'Monsters',
+      friends:'Friends', yourTag:'Your tag', copy:'Copy', add:'Add',
+      start:'▶ Start', resume:'▶ Resume', pause:'⏸ Pause',
+      timerTooltip:'Every 5 minutes, a random item is dropped with different rarity levels. The longer you explore, the rarer items may appear!',
+      hats:'Hats', weapons:'Weapons', shields:'Shields',
+      common:'Common', uncommon:'Uncommon', rare:'Rare', legendary:'Legendary',
+      online:'Online', inFocus:'In Focus', offline:'Offline',
+      sessionTypeLabel:{ leitura:'Reading', trabalho:'Work', estudos:'Study', outros:'Other' },
+      hoursPerMonth:'Hours per Month', hoursPerWeek:'Hours per Week',
+      hoursPerDay:'Hours per Day', hoursPerYear:'Hours per Year',
+      totalFocus:'Total Focus', completed:'Completed', itemsEarned:'Items Earned',
+      longestSession:'Longest Session', sessionsCount:'Sessions',
+      noSessionsInPeriod:'No sessions in selected period.',
+      noSessionsYet:'No sessions recorded yet.',
+      noFriendsYet:'No friends yet. Add by #tag!',
+      noMessagesYet:'No messages yet.<br>Say hi!',
+      noItemsInCategory:'No items in', noItemsYet:'yet',
+      noMonstersYet:'No monsters found yet.',
+      invalidTag:'Invalid tag.', noUserFound:'No user found with #',
+      cantAddSelf:'You cannot add yourself!', alreadyFriends:'You are already friends.',
+      requestAlreadySent:'Request already sent.', requestSent:'Request sent!',
+      copied:'Copied!', loginToSave:'Sign in to save your drops',
+      newBadge:'New', repeatedBadge:'Repeated',
+      messagePlaceholder:'Message...', interrupted:'(interrupted)',
+      catalogOf:'Catalog of', adventurer:'Adventurer', noData:'No data',
+      discardLosesItems:'Discard will remove', newItemsFromSession:'new item(s) from this session:',
+      noNewItemsLost:'No new items will be lost on discard.',
+      requests:'Requests', accept:'Accept', decline:'Decline',
+      viewCatalog:'View catalog of',
+      langToggle:'🇧🇷 Português',
+    },
+    pt: {
+      signIn:'Entrar', signOut:'Sair da conta',
+      loginToUnlock:'Faca login para desbloquear:', focusReportFeature:'Relatorio de foco', dropCatalogFeature:'Catalogo de drops',
+      focusReports:'Relatorios de Foco', dropCatalog:'Catalogo de Drops',
+      focusSession:'Sessao de Foco', sessionTypeQuestion:'Qual o tipo de sessao?',
+      reading:'Leitura', work:'Trabalho', study:'Estudos', other:'Outros',
+      sessionInterrupted:'⚔ Sessao Interrompida', continueSession:'Continuar', discardSession:'Descartar',
+      reports:'Relatorios', general:'Geral', sessions:'Sessoes',
+      period:'Periodo:', type:'Tipo:', all:'Tudo', week:'Semana', month:'Mes', year:'Ano', allTypes:'Todos',
+      distributionByType:'Distribuicao por tipo',
+      sessionItems:'Itens desta sessao',
+      focusMode:'Modo Foco', focusModeDesc:'Drops aparecem discretamente',
+      volume:'Volume',
+      itemAcquired:'Item Conquistado!', newItem:'Item Novo!', repeatedItem:'Item Repetido',
+      newMob:'Monstro Novo!', repeatedMob:'Monstro Repetido',
+      placeOnScreen:'Colocar na tela', later:'Depois',
+      inventory:'Inventario', collectItems:'Recolher itens da tela', collectMonsters:'Recolher monstros da tela',
+      catalog:'Catalogo', monsters:'Monstros',
+      friends:'Amigos', yourTag:'Seu tag', copy:'Copiar', add:'Adicionar',
+      start:'▶ Iniciar', resume:'▶ Continuar', pause:'⏸ Pausar',
+      timerTooltip:'A cada 5 minutos, um item aleatorio e dropado com diferentes niveis de raridade. Quanto mais tempo voce explorar, mais itens raros podem aparecer!',
+      hats:'Chapeus', weapons:'Armas', shields:'Escudos',
+      common:'Comum', uncommon:'Incomum', rare:'Raro', legendary:'Lendario',
+      online:'Online', inFocus:'Em foco', offline:'Offline',
+      sessionTypeLabel:{ leitura:'Leitura', trabalho:'Trabalho', estudos:'Estudos', outros:'Outros' },
+      hoursPerMonth:'Horas por Mes', hoursPerWeek:'Horas por Semana',
+      hoursPerDay:'Horas por Dia', hoursPerYear:'Horas por Ano',
+      totalFocus:'Total de Foco', completed:'Concluidas', itemsEarned:'Itens Ganhos',
+      longestSession:'Maior Sessao', sessionsCount:'Sessoes',
+      noSessionsInPeriod:'Nenhuma sessao no periodo selecionado.',
+      noSessionsYet:'Nenhuma sessao registrada ainda.',
+      noFriendsYet:'Nenhum amigo ainda. Adicione pelo #tag!',
+      noMessagesYet:'Nenhuma mensagem ainda.<br>Diga oi!',
+      noItemsInCategory:'Nenhum item em', noItemsYet:'ainda',
+      noMonstersYet:'Nenhum monstro encontrado ainda.',
+      invalidTag:'Tag invalido.', noUserFound:'Nenhum usuario encontrado com #',
+      cantAddSelf:'Voce nao pode adicionar a si mesmo!', alreadyFriends:'Voces ja sao amigos.',
+      requestAlreadySent:'Solicitacao ja enviada.', requestSent:'Solicitacao enviada!',
+      copied:'Copiado!', loginToSave:'Faca login para salvar seus drops',
+      newBadge:'Novo', repeatedBadge:'Repetido',
+      messagePlaceholder:'Mensagem...', interrupted:'(interrompida)',
+      catalogOf:'Catalogo de', adventurer:'Aventureiro', noData:'Sem dados',
+      discardLosesItems:'Descartar apagara', newItemsFromSession:'item(s) novo(s) desta sessao:',
+      noNewItemsLost:'Nenhum item novo sera perdido ao descartar.',
+      requests:'Solicitacoes', accept:'Aceitar', decline:'Recusar',
+      viewCatalog:'Ver catalogo de',
+      langToggle:'🇺🇸 English',
+    },
+  };
+
+  let currentLang = (() => {
+    const saved = localStorage.getItem('dt_lang');
+    if (saved) return saved;
+    return (navigator.language || '').startsWith('pt') ? 'pt' : 'en';
+  })();
+
+  function t(key) { return STRINGS[currentLang]?.[key] ?? STRINGS.en[key] ?? key; }
+
+  function applyLang() {
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
+    const langBtn = document.getElementById('lang-toggle-btn');
+    if (langBtn) langBtn.textContent = t('langToggle');
+  }
+
+  function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('dt_lang', lang);
+    applyLang();
+    if (!running) document.getElementById('start-btn').textContent = t('start');
+    buildTabs();
+    updateSessionPanel();
+    if (!document.getElementById('inv-modal').classList.contains('hidden'))     { buildTabs(); buildInventory(); }
+    if (!document.getElementById('mob-modal').classList.contains('hidden'))     buildMobInventory();
+    if (!document.getElementById('friends-modal').classList.contains('hidden')) buildFriendsList?.();
+    if (!document.getElementById('reports-modal').classList.contains('hidden')) { buildGeneralStats(); buildSessionsList(); }
+    if (catalogViewingFriend) document.querySelector('#catalog-header h3').textContent = `${t('catalogOf')} ${catalogViewingFriend.name}`;
+  }
+
   // ── Rarities ─────────────────────────────────────────────────
+  // Returns localised item/mob name
+  function iName(def) { return (currentLang === 'en' && def.nameEn) ? def.nameEn : def.name; }
+  // Returns localised rarity label
+  function rLabel(rarity) { return t(rarity) || rarity; }
+
   const RARITIES = {
     common:    { weight: 70, label: 'Comum',    glow: 'rgba(210,210,210,0.85)' },
     uncommon:  { weight: 17, label: 'Incomum',  glow: 'rgba(80,140,255,0.9)'  },
@@ -1322,50 +1460,50 @@
 
   // ── Categories & Items ───────────────────────────────────────
   const CATEGORIES = [
-    { id:'hats',    label:'Chapeus', folder:'Imagens/Chapeus'  },
-    { id:'weapons', label:'Armas',   folder:'Imagens/Armas'    },
-    { id:'shields', label:'Escudos', folder:'Imagens/Escudos'  },
+    { id:'hats',    label:'Chapeus', i18n:'hats',    folder:'Imagens/Chapeus'  },
+    { id:'weapons', label:'Armas',   i18n:'weapons', folder:'Imagens/Armas'    },
+    { id:'shields', label:'Escudos', i18n:'shields', folder:'Imagens/Escudos'  },
   ];
 
   const ITEMS = {
     // ── Chapéus ──
-    hat1:  { id:'hat1',  cat:'hats', rarity:'common',    name:'Chapeu de Palha',      file:'Imagens/Chapeus/Comum/Hat 1.png'       },
-    hat2:  { id:'hat2',  cat:'hats', rarity:'common',    name:'Chapeu de Couro',      file:'Imagens/Chapeus/Comum/Hat 2.png'       },
-    hat3:  { id:'hat3',  cat:'hats', rarity:'common',    name:'Chapeu de Bruxa',      file:'Imagens/Chapeus/Comum/Hat 3.png'       },
-    hat4:  { id:'hat4',  cat:'hats', rarity:'common',    name:'Bone DT',              file:'Imagens/Chapeus/Comum/Hat 4.png'       },
-    hat5:  { id:'hat5',  cat:'hats', rarity:'uncommon',  name:'Chapeu do Arqueiro',   file:'Imagens/Chapeus/Incomum/Hat 5.png'     },
-    hat6:  { id:'hat6',  cat:'hats', rarity:'legendary', name:'Chapeu do Rato',       file:'Imagens/Chapeus/Lendário/Hat 6.png'    },
-    hat7:  { id:'hat7',  cat:'hats', rarity:'uncommon',  name:'Chapeu Alado',         file:'Imagens/Chapeus/Incomum/Hat 7.png'     },
-    hat8:  { id:'hat8',  cat:'hats', rarity:'uncommon',  name:'Cartola',              file:'Imagens/Chapeus/Incomum/Hat 8.png'     },
-    hat9:  { id:'hat9',  cat:'hats', rarity:'legendary', name:'Elmo Caveira',         file:'Imagens/Chapeus/Lendário/Hat 9.png'    },
-    hat10: { id:'hat10', cat:'hats', rarity:'rare',      name:'Chapeu Aranha',        file:'Imagens/Chapeus/Raro/Hat 10.png'       },
-    hat11: { id:'hat11', cat:'hats', rarity:'uncommon',  name:'Touca de Cozinheiro',  file:'Imagens/Chapeus/Incomum/Hat 11.png'    },
-    hat12: { id:'hat12', cat:'hats', rarity:'rare',      name:'Slime Verde',          file:'Imagens/Chapeus/Raro/Hat 12.png'       },
-    hat13: { id:'hat13', cat:'hats', rarity:'rare',      name:'Morcego',              file:'Imagens/Chapeus/Raro/Hat 13.png'       },
+    hat1:  { id:'hat1',  cat:'hats', rarity:'common',    name:'Chapeu de Palha',      nameEn:'Straw Hat',           file:'Imagens/Chapeus/Comum/Hat 1.png'       },
+    hat2:  { id:'hat2',  cat:'hats', rarity:'common',    name:'Chapeu de Couro',      nameEn:'Leather Hat',         file:'Imagens/Chapeus/Comum/Hat 2.png'       },
+    hat3:  { id:'hat3',  cat:'hats', rarity:'common',    name:'Chapeu de Bruxa',      nameEn:'Witch Hat',           file:'Imagens/Chapeus/Comum/Hat 3.png'       },
+    hat4:  { id:'hat4',  cat:'hats', rarity:'common',    name:'Bone DT',              nameEn:'DT Cap',              file:'Imagens/Chapeus/Comum/Hat 4.png'       },
+    hat5:  { id:'hat5',  cat:'hats', rarity:'uncommon',  name:'Chapeu do Arqueiro',   nameEn:"Archer's Hat",        file:'Imagens/Chapeus/Incomum/Hat 5.png'     },
+    hat6:  { id:'hat6',  cat:'hats', rarity:'legendary', name:'Chapeu do Rato',       nameEn:"Rat's Hat",           file:'Imagens/Chapeus/Lendário/Hat 6.png'    },
+    hat7:  { id:'hat7',  cat:'hats', rarity:'uncommon',  name:'Chapeu Alado',         nameEn:'Winged Hat',          file:'Imagens/Chapeus/Incomum/Hat 7.png'     },
+    hat8:  { id:'hat8',  cat:'hats', rarity:'uncommon',  name:'Cartola',              nameEn:'Top Hat',             file:'Imagens/Chapeus/Incomum/Hat 8.png'     },
+    hat9:  { id:'hat9',  cat:'hats', rarity:'legendary', name:'Elmo Caveira',         nameEn:'Skull Helm',          file:'Imagens/Chapeus/Lendário/Hat 9.png'    },
+    hat10: { id:'hat10', cat:'hats', rarity:'rare',      name:'Chapeu Aranha',        nameEn:'Spider Hat',          file:'Imagens/Chapeus/Raro/Hat 10.png'       },
+    hat11: { id:'hat11', cat:'hats', rarity:'uncommon',  name:'Touca de Cozinheiro',  nameEn:"Chef's Hat",          file:'Imagens/Chapeus/Incomum/Hat 11.png'    },
+    hat12: { id:'hat12', cat:'hats', rarity:'rare',      name:'Slime Verde',          nameEn:'Green Slime',         file:'Imagens/Chapeus/Raro/Hat 12.png'       },
+    hat13: { id:'hat13', cat:'hats', rarity:'rare',      name:'Morcego',              nameEn:'Bat',                 file:'Imagens/Chapeus/Raro/Hat 13.png'       },
     // ── Armas ──
-    weapon1: { id:'weapon1',  cat:'weapons', rarity:'common',    name:'Adaga',              file:'Imagens/Armas/Comum/Arma 1.png'      },
-    weapon2: { id:'weapon2',  cat:'weapons', rarity:'common',    name:'Machado',            file:'Imagens/Armas/Comum/Arma 2.png'      },
-    weapon3: { id:'weapon3',  cat:'weapons', rarity:'common',    name:'Maca Cravejada',     file:'Imagens/Armas/Comum/Arma 3.png'      },
-    weapon4: { id:'weapon4',  cat:'weapons', rarity:'common',    name:'Arco',               file:'Imagens/Armas/Comum/Arma 4.png'      },
-    weapon5: { id:'weapon5',  cat:'weapons', rarity:'uncommon',  name:'Espada da Morte',    file:'Imagens/Armas/Incomum/Arma 5.png'    },
-    weapon6: { id:'weapon6',  cat:'weapons', rarity:'rare',      name:'Lanca',              file:'Imagens/Armas/Raro/6.png'            },
-    weapon7: { id:'weapon7',  cat:'weapons', rarity:'rare',      name:'Cajado do Mago',     file:'Imagens/Armas/Raro/Arma 7.png'       },
-    weapon8: { id:'weapon8',  cat:'weapons', rarity:'common',    name:'Foice Sinistral',    file:'Imagens/Armas/Comum/Arma 8.png'      },
-    weapon9: { id:'weapon9',  cat:'weapons', rarity:'legendary', name:'Besta Elfica',       file:'Imagens/Armas/Lendário/Arma 9.png'   },
-    weapon10:{ id:'weapon10', cat:'weapons', rarity:'uncommon',  name:'Martelo Trovejante', file:'Imagens/Armas/Incomum/Arma 10.png'   },
-    weapon11:{ id:'weapon11', cat:'weapons', rarity:'uncommon',  name:'Lamina Lendaria',    file:'Imagens/Armas/Incomum/Arma 11.png'   },
+    weapon1: { id:'weapon1',  cat:'weapons', rarity:'common',    name:'Adaga',              nameEn:'Dagger',              file:'Imagens/Armas/Comum/Arma 1.png'      },
+    weapon2: { id:'weapon2',  cat:'weapons', rarity:'common',    name:'Machado',            nameEn:'Axe',                 file:'Imagens/Armas/Comum/Arma 2.png'      },
+    weapon3: { id:'weapon3',  cat:'weapons', rarity:'common',    name:'Maca Cravejada',     nameEn:'Studded Mace',        file:'Imagens/Armas/Comum/Arma 3.png'      },
+    weapon4: { id:'weapon4',  cat:'weapons', rarity:'common',    name:'Arco',               nameEn:'Bow',                 file:'Imagens/Armas/Comum/Arma 4.png'      },
+    weapon5: { id:'weapon5',  cat:'weapons', rarity:'uncommon',  name:'Espada da Morte',    nameEn:'Death Sword',         file:'Imagens/Armas/Incomum/Arma 5.png'    },
+    weapon6: { id:'weapon6',  cat:'weapons', rarity:'rare',      name:'Lanca',              nameEn:'Lance',               file:'Imagens/Armas/Raro/6.png'            },
+    weapon7: { id:'weapon7',  cat:'weapons', rarity:'rare',      name:'Cajado do Mago',     nameEn:"Mage's Staff",        file:'Imagens/Armas/Raro/Arma 7.png'       },
+    weapon8: { id:'weapon8',  cat:'weapons', rarity:'common',    name:'Foice Sinistral',    nameEn:'Sinister Scythe',     file:'Imagens/Armas/Comum/Arma 8.png'      },
+    weapon9: { id:'weapon9',  cat:'weapons', rarity:'legendary', name:'Besta Elfica',       nameEn:'Elven Crossbow',      file:'Imagens/Armas/Lendário/Arma 9.png'   },
+    weapon10:{ id:'weapon10', cat:'weapons', rarity:'uncommon',  name:'Martelo Trovejante', nameEn:'Thundering Hammer',   file:'Imagens/Armas/Incomum/Arma 10.png'   },
+    weapon11:{ id:'weapon11', cat:'weapons', rarity:'uncommon',  name:'Lamina Lendaria',    nameEn:'Legendary Blade',     file:'Imagens/Armas/Incomum/Arma 11.png'   },
     // ── Escudos ──
-    shield1: { id:'shield1',  cat:'shields', rarity:'common',    name:'Escudo de Madeira',  file:'Imagens/Escudos/Comum/Escudo 1.png'  },
-    shield2: { id:'shield2',  cat:'shields', rarity:'common',    name:'Escudo da Cruz',     file:'Imagens/Escudos/Comum/Escudo 2.png'  },
-    shield3: { id:'shield3',  cat:'shields', rarity:'uncommon',  name:'Escudo das Caveiras',file:'Imagens/Escudos/Incomum/Escudo 3.png'},
-    shield4: { id:'shield4',  cat:'shields', rarity:'common',    name:'Escudo Solar',       file:'Imagens/Escudos/Comum/Escudo 4.png'  },
-    shield5: { id:'shield5',  cat:'shields', rarity:'common',    name:'Tabua de Madeira',   file:'Imagens/Escudos/Comum/Escudo 5.png'  },
-    shield6: { id:'shield6',  cat:'shields', rarity:'legendary', name:'Escudo Amaldicado',  file:'Imagens/Escudos/Lendário/Escudo 6.png'},
-    shield7: { id:'shield7',  cat:'shields', rarity:'rare',      name:'Escudo de Bronze',   file:'Imagens/Escudos/Raro/Escudo 7.png'   },
-    shield8: { id:'shield8',  cat:'shields', rarity:'rare',      name:'Escudo do Guerreiro',file:'Imagens/Escudos/Raro/Escudo 8.png'   },
-    shield9: { id:'shield9',  cat:'shields', rarity:'uncommon',  name:'Broquel das Sombras',file:'Imagens/Escudos/Incomum/Escudo 9.png'},
-    shield10:{ id:'shield10', cat:'shields', rarity:'uncommon',  name:'Escudo do Dragao',   file:'Imagens/Escudos/Incomum/Escudo 10.png'},
-    shield11:{ id:'shield11', cat:'shields', rarity:'legendary', name:'Egide Imortal',      file:'Imagens/Escudos/Lendário/Escudo 11.png'},
+    shield1: { id:'shield1',  cat:'shields', rarity:'common',    name:'Escudo de Madeira',  nameEn:'Wooden Shield',       file:'Imagens/Escudos/Comum/Escudo 1.png'  },
+    shield2: { id:'shield2',  cat:'shields', rarity:'common',    name:'Escudo da Cruz',     nameEn:'Cross Shield',        file:'Imagens/Escudos/Comum/Escudo 2.png'  },
+    shield3: { id:'shield3',  cat:'shields', rarity:'uncommon',  name:'Escudo das Caveiras',nameEn:'Skull Shield',        file:'Imagens/Escudos/Incomum/Escudo 3.png'},
+    shield4: { id:'shield4',  cat:'shields', rarity:'common',    name:'Escudo Solar',       nameEn:'Solar Shield',        file:'Imagens/Escudos/Comum/Escudo 4.png'  },
+    shield5: { id:'shield5',  cat:'shields', rarity:'common',    name:'Tabua de Madeira',   nameEn:'Wooden Board',        file:'Imagens/Escudos/Comum/Escudo 5.png'  },
+    shield6: { id:'shield6',  cat:'shields', rarity:'legendary', name:'Escudo Amaldicado',  nameEn:'Cursed Shield',       file:'Imagens/Escudos/Lendário/Escudo 6.png'},
+    shield7: { id:'shield7',  cat:'shields', rarity:'rare',      name:'Escudo de Bronze',   nameEn:'Bronze Shield',       file:'Imagens/Escudos/Raro/Escudo 7.png'   },
+    shield8: { id:'shield8',  cat:'shields', rarity:'rare',      name:'Escudo do Guerreiro',nameEn:"Warrior's Shield",    file:'Imagens/Escudos/Raro/Escudo 8.png'   },
+    shield9: { id:'shield9',  cat:'shields', rarity:'uncommon',  name:'Broquel das Sombras',nameEn:'Shadow Buckler',      file:'Imagens/Escudos/Incomum/Escudo 9.png'},
+    shield10:{ id:'shield10', cat:'shields', rarity:'uncommon',  name:'Escudo do Dragao',   nameEn:'Dragon Shield',       file:'Imagens/Escudos/Incomum/Escudo 10.png'},
+    shield11:{ id:'shield11', cat:'shields', rarity:'legendary', name:'Egide Imortal',      nameEn:'Immortal Aegis',      file:'Imagens/Escudos/Lendário/Escudo 11.png'},
   };
 
   // ── State ────────────────────────────────────────────────────
@@ -1553,7 +1691,7 @@
       remainingAtStart = remaining;
       // Express current hatElapsed as a wall-clock epoch
       lastAwardEpoch  = tickStart - hatElapsed * 1000;
-      btn.textContent = '⏸ Pausar'; btn.classList.add('pausing');
+      btn.textContent = t('pause'); btn.classList.add('pausing');
       tickId = setInterval(tick, 300); // shorter interval → snappier on tab refocus
       if (currentUser) db.collection('users').doc(currentUser.uid).update({ inFocus: true, focusStartedAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
     } else {
@@ -1561,7 +1699,7 @@
       const elapsed = Math.floor((Date.now() - tickStart) / 1000);
       remaining  = Math.max(0, remainingAtStart - elapsed);
       hatElapsed = Math.floor((Date.now() - lastAwardEpoch) / 1000);
-      btn.textContent = '▶ Continuar'; btn.classList.remove('pausing');
+      btn.textContent = t('resume'); btn.classList.remove('pausing');
       clearInterval(tickId);
       if (currentUser) db.collection('users').doc(currentUser.uid).update({ inFocus: false }).catch(()=>{});
     }
@@ -1572,7 +1710,7 @@
     remaining = 0; totalTime = 0; hatElapsed = 0;
     tickStart = 0; remainingAtStart = 0; lastAwardEpoch = 0;
     updateDisplay(); updateProgressBar(); updateLifeBar();
-    document.getElementById('start-btn').textContent = '▶ Iniciar';
+    document.getElementById('start-btn').textContent = t('start');
     document.getElementById('start-btn').classList.remove('pausing');
     if (currentUser) db.collection('users').doc(currentUser.uid).update({ inFocus: false }).catch(()=>{});
   }
@@ -1597,7 +1735,7 @@
     if (remaining <= 0) {
       remaining = 0; running = false; clearInterval(tickId);
       updateDisplay(); updateLifeBar();
-      document.getElementById('start-btn').textContent = '▶ Iniciar';
+      document.getElementById('start-btn').textContent = t('start');
       document.getElementById('start-btn').classList.remove('pausing');
       endSession(true);
     }
@@ -1745,9 +1883,9 @@
       if (rar) img.style.filter = `drop-shadow(0 0 5px ${rar.glow})`;
 
       const info = document.createElement('div'); info.style.cssText = 'display:flex;flex-direction:column;flex:1;gap:1px;';
-      const name = document.createElement('span'); name.className = 'sp-name'; name.textContent = def.name;
+      const name = document.createElement('span'); name.className = 'sp-name'; name.textContent = iName(def);
       const badge = document.createElement('span'); badge.className = isNew ? 'sp-new' : 'sp-rep';
-      badge.textContent = isNew ? 'Novo' : 'Repetido';
+      badge.textContent = isNew ? t('newBadge') : t('repeatedBadge');
       info.appendChild(name); info.appendChild(badge);
 
       row.appendChild(img); row.appendChild(info);
@@ -1803,11 +1941,11 @@
     const rar = MOB_RARITIES[MOBS[id].rarity];
     const notif = document.getElementById('hat-notif');
     const h3 = notif.querySelector('h3');
-    h3.textContent = isNew ? 'Monstro Novo!' : 'Monstro Repetido';
-    h3.style.color  = isNew ? '#EAD89E'       : '#909090';
+    h3.textContent = isNew ? t('newMob') : t('repeatedMob');
+    h3.style.color  = isNew ? '#EAD89E' : '#909090';
     document.getElementById('notif-img').src          = MOBS[id].file;
     document.getElementById('notif-img').style.filter = isNew ? `drop-shadow(0 0 14px ${rar.glow})` : 'saturate(0.4) brightness(0.8)';
-    document.getElementById('notif-name').innerHTML   = `<span style="color:${rar.glow.replace(/,[^,]+\)$/,')')}">[${rar.label}]</span> ${MOBS[id].name}`;
+    document.getElementById('notif-name').innerHTML   = `<span style="color:${rar.glow.replace(/,[^,]+\)$/,')')}">[${rLabel(MOBS[id].rarity)}]</span> ${iName(MOBS[id])}`;
     notif.style.setProperty('--notif-glow', rar.glow);
     show('hat-notif'); show('overlay');
     notif.classList.remove('anim','item-repeated','item-new');
@@ -1824,11 +1962,11 @@
     const rar = RARITIES[ITEMS[id].rarity];
     const notif = document.getElementById('hat-notif');
     const h3 = notif.querySelector('h3');
-    h3.textContent = isNew ? 'Item Novo!' : 'Item Repetido';
+    h3.textContent = isNew ? t('newItem') : t('repeatedItem');
     h3.style.color  = isNew ? '#EAD89E'  : '#909090';
     document.getElementById('notif-img').src          = ITEMS[id].file;
     document.getElementById('notif-img').style.filter = isNew ? `drop-shadow(0 0 14px ${rar.glow})` : 'saturate(0.4) brightness(0.8)';
-    document.getElementById('notif-name').innerHTML   = `<span style="color:${rar.glow.replace(/,[^,]+\)$/,')')}">[${rar.label}]</span> ${ITEMS[id].name}`;
+    document.getElementById('notif-name').innerHTML   = `<span style="color:${rar.glow.replace(/,[^,]+\)$/,')')}">[${rLabel(ITEMS[id].rarity)}]</span> ${iName(ITEMS[id])}`;
     notif.style.setProperty('--notif-glow', rar.glow);
     show('hat-notif'); show('overlay');
     notif.classList.remove('anim','item-repeated','item-new');
@@ -1962,7 +2100,7 @@
     CATEGORIES.forEach(cat=>{
       const btn=document.createElement('button');
       btn.className='inv-tab'+(cat.id===activeCategory?' active':'');
-      btn.textContent=cat.label;
+      btn.textContent=t(cat.i18n);
       btn.onclick=()=>{ activeCategory=cat.id; buildTabs(); buildInventory(); };
       c.appendChild(btn);
     });
@@ -1972,7 +2110,7 @@
     if (!currentUser) {
       const banner = document.createElement('div');
       banner.style.cssText = 'display:inline-flex;align-items:center;gap:6px;border:1px solid #5A4010;border-radius:20px;padding:5px 16px;margin-bottom:10px;color:#907838;font-size:1.35rem;cursor:pointer;transition:border-color 0.15s;white-space:nowrap;';
-      banner.innerHTML = 'Faca <strong style="color:#C8960E">login</strong> para salvar seus drops';
+      banner.textContent = t('loginToSave');
       banner.onclick = () => { closeAll(); signInWithGoogle(); };
       banner.onmouseenter = () => banner.style.borderColor = '#C8960E';
       banner.onmouseleave = () => banner.style.borderColor = '#5A4010';
@@ -1983,7 +2121,8 @@
       .sort((a,b)=>RARITY_ORDER[a.rarity]-RARITY_ORDER[b.rarity]);
     if (!catItems.length) {
       const msg=document.createElement('div'); msg.className='inv-empty';
-      msg.innerHTML=`Nenhum item em <strong>${CATEGORIES.find(c=>c.id===activeCategory)?.label??activeCategory}</strong> ainda`;
+      const catLabel = t(CATEGORIES.find(c=>c.id===activeCategory)?.i18n ?? activeCategory);
+      msg.innerHTML=`${t('noItemsInCategory')} <strong>${catLabel}</strong> ${t('noItemsYet')}`;
       scroll.appendChild(msg); return;
     }
     for (let i=0;i<catItems.length;i+=SLOTS) {
@@ -1998,8 +2137,8 @@
         if (item) {
           const on=placedHats.some(h=>h.itemId===item.id);
           slot.className=`inv-slot rarity-${item.rarity}`+(on?' on-screen':'');
-          slot.title=on?`${item.name} (na tela)`:item.name;
-          const img=document.createElement('img'); img.src=item.file; img.alt=item.name;
+          slot.title=iName(item);
+          const img=document.createElement('img'); img.src=item.file; img.alt=iName(item);
           slot.appendChild(img);
           if (!on) slot.onclick=()=>{ spawnHat(item.id); closeAll(); };
         } else { slot.className='inv-slot inv-slot-empty'; }
@@ -2024,7 +2163,7 @@
     if (chatListener) { chatListener(); chatListener = null; }
     if (catalogViewingFriend) {
       catalogViewingFriend = null;
-      document.querySelector('#catalog-header h3').textContent = 'Catalogo';
+      document.querySelector('#catalog-header h3').textContent = t('catalog');
     }
   }
 
@@ -2078,20 +2217,20 @@
       if (!state.savedAt || Date.now() - state.savedAt > 86400000) { clearSessionRecovery(); return; }
       if (!state.remaining || state.remaining <= 0) { clearSessionRecovery(); return; }
       _pendingRecovery = state;
-      const typeLabel = { leitura:'Leitura', trabalho:'Trabalho', estudos:'Estudos', outros:'Outros' }[state.sessionType] || state.sessionType;
+      const typeLabel = t('sessionTypeLabel')[state.sessionType] || state.sessionType;
       const mins = Math.floor(state.remaining / 60), secs = state.remaining % 60;
       const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
       const itemCount = (state.itemsEarned || []).length;
       document.getElementById('recovery-info').innerHTML =
-        `Sessao de <strong>${typeLabel}</strong> — <strong>${timeStr}</strong> restantes` +
-        (itemCount > 0 ? `<br>${itemCount} item(s) conquistado(s)` : '');
+        `${t('focusSession')}: <strong>${typeLabel}</strong> — <strong>${timeStr}</strong>` +
+        (itemCount > 0 ? `<br>${itemCount} item(s)` : '');
       const newItems = (state.itemsEarned || [])
         .filter(it => it.isNew ?? (!(state.preSessionItems||[]).includes(it.id) && !(state.preSessionMobs||[]).includes(it.id)))
         .filter((it,i,a) => a.findIndex(x=>x.id===it.id)===i); // deduplica
       const lostGrid = document.getElementById('recovery-lost-items');
       lostGrid.innerHTML = '';
       if (newItems.length > 0) {
-        document.getElementById('recovery-warn').textContent = `Descartar apagara ${newItems.length} item(s) novo(s):`;
+        document.getElementById('recovery-warn').textContent = `${t('discardLosesItems')} ${newItems.length} ${t('newItemsFromSession')}`;
         newItems.forEach(it => {
           const def = ITEMS[it.id] || MOBS[it.id]; if (!def) return;
           const card = document.createElement('div'); card.className = 'recovery-lost-card';
@@ -2100,7 +2239,7 @@
           card.appendChild(img); card.appendChild(lbl); lostGrid.appendChild(card);
         });
       } else {
-        document.getElementById('recovery-warn').textContent = 'Nenhum item novo sera perdido ao descartar.';
+        document.getElementById('recovery-warn').textContent = t('noNewItemsLost');
       }
       document.getElementById('recovery-modal').classList.remove('hidden');
       document.getElementById('overlay').classList.remove('hidden');
@@ -2125,7 +2264,7 @@
     updateDisplay(); updateProgressBar(); updateLifeBar();
     updateSessionPanel();
     const btn = document.getElementById('start-btn');
-    btn.textContent = '▶ Continuar'; btn.classList.remove('pausing');
+    btn.textContent = t('resume'); btn.classList.remove('pausing');
     document.getElementById('recovery-modal').classList.add('hidden');
     document.getElementById('overlay').classList.add('hidden');
     _pendingRecovery = null;
@@ -2335,18 +2474,18 @@
     const cardsEl = document.getElementById('rep-stat-cards');
     cardsEl.innerHTML = '';
     if (!filtered.length) {
-      cardsEl.innerHTML = '<div class="report-empty" style="grid-column:1/-1">Nenhuma sessao no periodo selecionado.</div>';
+      cardsEl.innerHTML = `<div class="report-empty" style="grid-column:1/-1">${t('noSessionsInPeriod')}</div>`;
     } else {
       [
-        { label:'Total de Foco',       value: fmtHours(stats.totalSecs)     },
-        { label:'Leitura',             value: fmtHours(stats.leituraSecs)   },
-        { label:'Trabalho',            value: fmtHours(stats.trabalhoSecs)  },
-        { label:'Estudos',             value: fmtHours(stats.estudosSecs)   },
-        { label:'Outros',              value: fmtHours(stats.outrosSecs)    },
-        { label:'Sessoes',             value: stats.totalSessions            },
-        { label:'Concluidas',          value: stats.completed                },
-        { label:'Itens Ganhos',        value: stats.totalItems               },
-        { label:'Maior Sessao',        value: fmtHours(stats.longestSecs)   },
+        { label:t('totalFocus'),    value: fmtHours(stats.totalSecs)     },
+        { label:t('reading'),       value: fmtHours(stats.leituraSecs)   },
+        { label:t('work'),          value: fmtHours(stats.trabalhoSecs)  },
+        { label:t('study'),         value: fmtHours(stats.estudosSecs)   },
+        { label:t('other'),         value: fmtHours(stats.outrosSecs)    },
+        { label:t('sessionsCount'), value: stats.totalSessions            },
+        { label:t('completed'),     value: stats.completed                },
+        { label:t('itemsEarned'),   value: stats.totalItems               },
+        { label:t('longestSession'),value: fmtHours(stats.longestSecs)   },
       ].forEach(c => {
         const el = document.createElement('div'); el.className='rep-stat-card';
         el.innerHTML = `<div class="rep-stat-label">${c.label}</div><div class="rep-stat-value">${c.value}</div>`;
@@ -2355,9 +2494,9 @@
     }
 
     // Determine bar grouping
-    let grouping = 'month', barTitle = 'Horas por Mes';
-    if (activePeriodFilter === 'week')  { grouping = 'day';   barTitle = 'Horas por Dia';    }
-    else if (activePeriodFilter === 'month') { grouping = 'week';  barTitle = 'Horas por Semana'; }
+    let grouping = 'month', barTitle = t('hoursPerMonth');
+    if (activePeriodFilter === 'week')  { grouping = 'day';   barTitle = t('hoursPerDay');   }
+    else if (activePeriodFilter === 'month') { grouping = 'week';  barTitle = t('hoursPerWeek'); }
     document.getElementById('bar-chart-title').textContent = barTitle;
 
     const groups = groupByPeriod(filtered, grouping);
@@ -2385,7 +2524,7 @@
       ctx.beginPath(); ctx.arc(cx, cy, innerR, 0, Math.PI*2);
       ctx.fillStyle = '#080401'; ctx.fill();
       ctx.fillStyle = '#555'; ctx.textAlign = 'center'; ctx.font = '12px sans-serif';
-      ctx.fillText('Sem dados', cx, cy+4);
+      ctx.fillText(t('noData'), cx, cy+4);
       return;
     }
 
@@ -2418,7 +2557,7 @@
     const keys = Object.keys(groups);
     if (!keys.length) {
       ctx.fillStyle = '#555'; ctx.textAlign = 'center'; ctx.font = '13px sans-serif';
-      ctx.fillText('Sem dados', W/2, H/2); return;
+      ctx.fillText(t('noData'), W/2, H/2); return;
     }
 
     const PL=44, PR=10, PT=12, PB=34;
@@ -2497,7 +2636,7 @@
     const scroll = document.getElementById('rep-sessoes-scroll'); scroll.innerHTML = '';
     if (!sessionHistory.length) {
       const msg = document.createElement('div'); msg.className='report-empty';
-      msg.textContent = 'Nenhuma sessao registrada ainda.'; scroll.appendChild(msg); return;
+      msg.textContent = t('noSessionsYet'); scroll.appendChild(msg); return;
     }
     sessionHistory.forEach(sess => {
       const card = document.createElement('div');
@@ -2505,7 +2644,7 @@
 
       const top = document.createElement('div'); top.className='report-card-top';
       const typeEl = document.createElement('div'); typeEl.className='report-type';
-      typeEl.textContent = (sess.type==='leitura' ? 'Leitura' : 'Trabalho') + (sess.completed ? '' : ' (interrompida)');
+      typeEl.textContent = (t('sessionTypeLabel')[sess.type] || sess.type) + (sess.completed ? '' : ' ' + t('interrupted'));
       const dateEl = document.createElement('div'); dateEl.className='report-date';
       dateEl.textContent = `${sess.date} · ${sess.startTime}–${sess.endTime||'?'}`;
       top.appendChild(typeEl); top.appendChild(dateEl); card.appendChild(top);
@@ -2676,7 +2815,7 @@
       if (friendsBtn) friendsBtn.style.display = 'block';
       document.getElementById('auth-avatar').src = user.photoURL || '';
       document.getElementById('auth-avatar').style.display = user.photoURL ? '' : 'none';
-      const _firstName = (user.displayName||'Aventureiro').split(' ')[0];
+      const _firstName = (user.displayName||t('adventurer')).split(' ')[0];
       const _tag = userProfile?.tag ? ' #' + userProfile.tag : '';
       document.getElementById('auth-name').textContent = _firstName + _tag;
     } else {
@@ -2883,7 +3022,7 @@
       const unsub = db.collection('users').doc(uid).onSnapshot(snap => {
         if (!snap.exists) return;
         const d = snap.data();
-        const friend = { uid, name: d.displayName||'Aventureiro', tag: d.tag||'????', photoURL: d.photoURL||'', inFocus: d.inFocus||false, isOnline: d.isOnline||false, lastSeen: d.lastSeen, focusStartedAt: d.focusStartedAt };
+        const friend = { uid, name: d.displayName||t('adventurer'), tag: d.tag||'????', photoURL: d.photoURL||'', inFocus: d.inFocus||false, isOnline: d.isOnline||false, lastSeen: d.lastSeen, focusStartedAt: d.focusStartedAt };
         const idx = friendsData.findIndex(f => f.uid === uid);
         if (idx >= 0) friendsData[idx] = friend; else friendsData.push(friend);
         if (!document.getElementById('friends-modal').classList.contains('hidden')) buildFriendsModal();
@@ -2900,9 +3039,9 @@
     scroll.innerHTML = '';
 
     if (pendingRequests.length > 0) {
-      const t = document.createElement('div'); t.className = 'friends-section-title';
-      t.textContent = 'Solicitacoes (' + pendingRequests.length + ')';
-      scroll.appendChild(t);
+      const secTitle = document.createElement('div'); secTitle.className = 'friends-section-title';
+      secTitle.textContent = t('requests') + ' (' + pendingRequests.length + ')';
+      scroll.appendChild(secTitle);
       pendingRequests.forEach(req => scroll.appendChild(buildRequestCard(req)));
     }
 
@@ -2912,7 +3051,7 @@
 
     if (friendsData.length === 0) {
       const e = document.createElement('div'); e.className = 'friends-empty';
-      e.textContent = 'Nenhum amigo ainda. Adicione pelo #tag!';
+      e.textContent = t('noFriendsYet');
       scroll.appendChild(e);
     } else {
       [...friendsData].sort((a,b) => (b.inFocus?2:b.isOnline?1:0) - (a.inFocus?2:a.isOnline?1:0))
@@ -2925,7 +3064,7 @@
     const av = req.fromPhoto
       ? `<img class="friend-avatar" src="${req.fromPhoto}" alt="">`
       : `<div class="friend-avatar-ph">${(req.fromName||'?')[0]}</div>`;
-    card.innerHTML = `${av}<div class="friend-info"><div class="friend-name">${req.fromName||'Aventureiro'}</div><div class="friend-tag">#${req.fromTag||'????'}</div></div><div class="friend-actions"><button class="friend-btn accept" onclick="acceptFriendReq('${req.id}','${req.from}')">Aceitar</button><button class="friend-btn decline" onclick="declineFriendReq('${req.id}')">Recusar</button></div>`;
+    card.innerHTML = `${av}<div class="friend-info"><div class="friend-name">${req.fromName||t('adventurer')}</div><div class="friend-tag">#${req.fromTag||'????'}</div></div><div class="friend-actions"><button class="friend-btn accept" onclick="acceptFriendReq('${req.id}','${req.from}')">${t('accept')}</button><button class="friend-btn decline" onclick="declineFriendReq('${req.id}')">${t('decline')}</button></div>`;
     return card;
   }
 
@@ -2945,9 +3084,9 @@
       : `<div class="friend-avatar-ph">${(f.name||'?')[0]}</div>`;
     let cls, label;
     const recentlySeen = f.lastSeen && (Date.now() / 1000 - f.lastSeen.seconds) < 180;
-    if (f.inFocus)                     { cls = 'focus';  label = 'Em foco' + fmtFocusTime(f.focusStartedAt); }
-    else if (f.isOnline && recentlySeen) { cls = 'online'; label = 'Online'; }
-    else                               { cls = 'idle';   label = 'Offline'; }
+    if (f.inFocus)                     { cls = 'focus';  label = t('inFocus') + fmtFocusTime(f.focusStartedAt); }
+    else if (f.isOnline && recentlySeen) { cls = 'online'; label = t('online'); }
+    else                               { cls = 'idle';   label = t('offline'); }
     const msgBtn = document.createElement('button');
     msgBtn.className = 'friend-btn';
     msgBtn.textContent = '💬';
@@ -2956,7 +3095,7 @@
     const catBtn = document.createElement('button');
     catBtn.className = 'friend-btn';
     catBtn.textContent = '📖';
-    catBtn.title = `Ver catalogo de ${f.name}`;
+    catBtn.title = `${t('viewCatalog')} ${f.name}`;
     catBtn.style.cssText = 'font-size:1.2rem;padding:4px 8px;';
     catBtn.onclick = () => openFriendCatalog(f);
     const actions = document.createElement('div');
@@ -2978,18 +3117,18 @@
     if (!currentUser || !userProfile) return;
     const raw = document.getElementById('add-friend-input').value.trim().replace('#','');
     const tag = raw.padStart(4, '0');
-    if (!raw || raw.length > 5) { showFriendsMsg('Tag invalido.', false); return; }
+    if (!raw || raw.length > 5) { showFriendsMsg(t('invalidTag'), false); return; }
 
     try {
       const tagSnap = await db.collection('userTags').doc(tag).get();
-      if (!tagSnap.exists) { showFriendsMsg('Nenhum usuario encontrado com #' + tag, false); return; }
+      if (!tagSnap.exists) { showFriendsMsg(t('noUserFound') + tag, false); return; }
       const targetUid = tagSnap.data().uid;
-      if (targetUid === currentUser.uid) { showFriendsMsg('Voce nao pode adicionar a si mesmo!', false); return; }
-      if ((userProfile.friends||[]).includes(targetUid)) { showFriendsMsg('Voces ja sao amigos.', false); return; }
+      if (targetUid === currentUser.uid) { showFriendsMsg(t('cantAddSelf'), false); return; }
+      if ((userProfile.friends||[]).includes(targetUid)) { showFriendsMsg(t('alreadyFriends'), false); return; }
 
       const existing = await db.collection('friendRequests')
         .where('from','==',currentUser.uid).where('to','==',targetUid).where('status','==','pending').get();
-      if (!existing.empty) { showFriendsMsg('Solicitacao ja enviada.', false); return; }
+      if (!existing.empty) { showFriendsMsg(t('requestAlreadySent'), false); return; }
 
       await db.collection('friendRequests').add({
         from: currentUser.uid, fromName: currentUser.displayName||'Aventureiro',
@@ -2998,8 +3137,8 @@
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       document.getElementById('add-friend-input').value = '';
-      showFriendsMsg('Solicitacao enviada!', true);
-    } catch(e) { showFriendsMsg('Erro: ' + e.message, false); }
+      showFriendsMsg(t('requestSent'), true);
+    } catch(e) { showFriendsMsg('Error: ' + e.message, false); }
   }
 
   async function acceptFriendReq(reqId, fromUid) {
@@ -3022,8 +3161,8 @@
     if (!tag) return;
     navigator.clipboard.writeText('#' + tag).then(() => {
       const btn = document.getElementById('copy-tag-btn');
-      btn.textContent = 'Copiado!';
-      setTimeout(() => { btn.textContent = 'Copiar'; }, 1500);
+      btn.textContent = t('copied');
+      setTimeout(() => { btn.textContent = t('copy'); }, 1500);
     }).catch(()=>{});
   }
 
@@ -3092,7 +3231,7 @@
     div.innerHTML = '';
 
     if (!msgs.length) {
-      div.innerHTML = '<div class="chat-empty">Nenhuma mensagem ainda.<br>Diga oi!</div>';
+      div.innerHTML = `<div class="chat-empty">${t('noMessagesYet')}</div>`;
       return;
     }
 
@@ -3171,7 +3310,7 @@
       earnedItems: data.earnedItems || [],
       earnedMobs:  data.earnedMobs  || [],
     };
-    document.querySelector('#catalog-header h3').textContent = `Catalogo de ${f.name}`;
+    document.querySelector('#catalog-header h3').textContent = `${t('catalogOf')} ${f.name}`;
     document.getElementById('friends-modal').classList.add('hidden');
     activeCatTab = 'hats';
     buildCatalogTabs(); buildCatalogGrid(); show('catalog-modal'); show('overlay');
@@ -3223,13 +3362,13 @@
 
       const badge = document.createElement('span');
       badge.className = 'cat-rarity';
-      badge.textContent = '[' + rarity.label + ']';
+      badge.textContent = '[' + rLabel(entry.rarity) + ']';
       badge.style.color = rarity.glow.replace(/,[^,]+\)$/, ')');
       card.appendChild(badge);
 
       const name = document.createElement('div');
       name.className = 'cat-name';
-      name.textContent = discovered ? entry.name : '???';
+      name.textContent = discovered ? iName(entry) : '???';
       card.appendChild(name);
 
       grid.appendChild(card);
@@ -3458,18 +3597,18 @@
     legendary: { weight: 1,  label:'Lendario', glow:'rgba(200,80,255,0.95)' },
   };
   const MOBS = {
-    mob1:  { id:'mob1',  rarity:'common',    name:'Zumbi Guerreiro',    file:'Imagens/Mobs/Comum/Mob 1.png'     },
-    mob2:  { id:'mob2',  rarity:'common',    name:'Goblin',             file:'Imagens/Mobs/Comum/Mob 2.png'     },
-    mob3:  { id:'mob3',  rarity:'uncommon',  name:'Slime Mau',          file:'Imagens/Mobs/Incomum/Mob 3.png'   },
-    mob4:  { id:'mob4',  rarity:'common',    name:'Morcego',            file:'Imagens/Mobs/Comum/Mob 4.png'     },
-    mob5:  { id:'mob5',  rarity:'common',    name:'Slime Amigavel',     file:'Imagens/Mobs/Comum/Mob 5.png'     },
-    mob6:  { id:'mob6',  rarity:'uncommon',  name:'Orc',                file:'Imagens/Mobs/Incomum/Mob 6.png'   },
-    mob7:  { id:'mob7',  rarity:'common',    name:'Zumbi Podre',        file:'Imagens/Mobs/Comum/Mob 7.png'     },
-    mob8:  { id:'mob8',  rarity:'rare',      name:'Dragao Vermelho',    file:'Imagens/Mobs/Raro/Mob 8.png'      },
-    mob9:  { id:'mob9',  rarity:'uncommon',  name:'Esqueleto Arqueiro', file:'Imagens/Mobs/Incomum/Mob 9.png'   },
-    mob10: { id:'mob10', rarity:'legendary', name:'Lorde das Trevas',   file:'Imagens/Mobs/Lendário/Mob 10.png' },
-    mob11: { id:'mob11', rarity:'rare',      name:'Bruxa Sombria',      file:'Imagens/Mobs/Raro/Mob 11.png'     },
-    mob12: { id:'mob12', rarity:'rare',      name:'Troll das Pedras',   file:'Imagens/Mobs/Raro/Mob 12.png'     },
+    mob1:  { id:'mob1',  rarity:'common',    name:'Zumbi Guerreiro',    nameEn:'Warrior Zombie',    file:'Imagens/Mobs/Comum/Mob 1.png'     },
+    mob2:  { id:'mob2',  rarity:'common',    name:'Goblin',             nameEn:'Goblin',            file:'Imagens/Mobs/Comum/Mob 2.png'     },
+    mob3:  { id:'mob3',  rarity:'uncommon',  name:'Slime Mau',          nameEn:'Evil Slime',        file:'Imagens/Mobs/Incomum/Mob 3.png'   },
+    mob4:  { id:'mob4',  rarity:'common',    name:'Morcego',            nameEn:'Bat',               file:'Imagens/Mobs/Comum/Mob 4.png'     },
+    mob5:  { id:'mob5',  rarity:'common',    name:'Slime Amigavel',     nameEn:'Friendly Slime',    file:'Imagens/Mobs/Comum/Mob 5.png'     },
+    mob6:  { id:'mob6',  rarity:'uncommon',  name:'Orc',                nameEn:'Orc',               file:'Imagens/Mobs/Incomum/Mob 6.png'   },
+    mob7:  { id:'mob7',  rarity:'common',    name:'Zumbi Podre',        nameEn:'Rotting Zombie',    file:'Imagens/Mobs/Comum/Mob 7.png'     },
+    mob8:  { id:'mob8',  rarity:'rare',      name:'Dragao Vermelho',    nameEn:'Red Dragon',        file:'Imagens/Mobs/Raro/Mob 8.png'      },
+    mob9:  { id:'mob9',  rarity:'uncommon',  name:'Esqueleto Arqueiro', nameEn:'Skeleton Archer',   file:'Imagens/Mobs/Incomum/Mob 9.png'   },
+    mob10: { id:'mob10', rarity:'legendary', name:'Lorde das Trevas',   nameEn:'Dark Lord',         file:'Imagens/Mobs/Lendário/Mob 10.png' },
+    mob11: { id:'mob11', rarity:'rare',      name:'Bruxa Sombria',      nameEn:'Shadow Witch',      file:'Imagens/Mobs/Raro/Mob 11.png'     },
+    mob12: { id:'mob12', rarity:'rare',      name:'Troll das Pedras',   nameEn:'Stone Troll',       file:'Imagens/Mobs/Raro/Mob 12.png'     },
   };
   const MAX_MOBS = 3;
   let placedMobs = [];
@@ -3598,7 +3737,7 @@
     const mobIds=earnedMobs.filter(id=>MOBS[id]);
     if(!mobIds.length){
       const msg=document.createElement('div'); msg.className='inv-empty';
-      msg.textContent='Nenhum monstro encontrado ainda.'; scroll.appendChild(msg); return;
+      msg.textContent=t('noMonstersYet'); scroll.appendChild(msg); return;
     }
     const row=document.createElement('div'); row.className='inv-row';
     const bg=document.createElement('img'); bg.src='Imagens/Inventário.png'; bg.className='inv-bg'; bg.alt='';
@@ -3678,6 +3817,7 @@
   updateDisplay();
   loadMobState();
   loadSessions();
+  applyLang();
   requestAnimationFrame(()=>{ positionChest(); layoutLifeBar(); positionShadows(); drawGrip(); checkSessionRecovery(); });
   </script>
 </body>
